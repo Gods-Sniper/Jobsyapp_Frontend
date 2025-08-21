@@ -1,8 +1,12 @@
 import React from "react";
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView,} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal} from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function JobDetail() {
+  const router = useRouter();
+  const[menuVisible, setMenuVisible] = React.useState(false);
+
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
@@ -11,9 +15,41 @@ export default function JobDetail() {
             <Text style={styles.avatarText}>B</Text>
           </View>
         </TouchableOpacity>
-        <TouchableOpacity>
-          <Ionicons name="menu" size={28} color="#181818" />
-        </TouchableOpacity>
+        
+
+        <View style={{ flexDirection: "row", justifyContent: "flex-start", padding: 10 }}>
+            <TouchableOpacity onPress={() => setMenuVisible(true)}>
+              <Ionicons name="menu" size={28} color="#181818" />
+            </TouchableOpacity>
+            
+          <Modal
+            visible={menuVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setMenuVisible(false)}
+          >
+            <View style={styles.menuContainer}>
+              <View style={styles.menu}>
+                <TouchableOpacity onPress={() => router.push("/createjob")}>
+                  <Text style={styles.menuItem}> Create Job</Text>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Text style={styles.menuItem}> View Applicants</Text>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Text style={styles.menuItem}> Delete Job</Text>
+                </TouchableOpacity>
+                <TouchableOpacity>
+                  <Text style={styles.menuItem}> Update Job</Text>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => setMenuVisible(false)}>
+                  <Text style={styles.closeButton}>Close Menu</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+        </View>
+
       </View>
 
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
@@ -136,6 +172,34 @@ const styles = StyleSheet.create({
     color: "#40189D",
     fontWeight: "bold",
     fontSize: 30,
+  },
+  menuContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.4)",
+    justifyContent: "flex-start",
+    alignItems: "flex-start",
+  },
+  menu: {
+    width: "60%",
+    height: "30%",
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    marginTop: 90,
+    alignSelf: "flex-end",
+  },
+  menuItem: {
+    fontSize: 25,
+    fontWeight: "bold",
+    marginBottom: 10,
+    marginTop: 10,
+    marginVertical: 10,
+    color: "#181818",
+  },
+  closeButton: {
+    marginTop: 20,
+    color: "red",
+    fontSize: 20,
   },
   title: {
     fontSize: 35,
