@@ -33,7 +33,7 @@ export default function JobDetail() {
                 <TouchableOpacity onPress={() => router.push("/createjob")}>
                   <Text style={styles.menuItem}> Create Job</Text>
                 </TouchableOpacity>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push("/viewapplicants") }>
                   <Text style={styles.menuItem}> View Applicants</Text>
                 </TouchableOpacity>
                 <TouchableOpacity>
@@ -181,9 +181,10 @@ const styles = StyleSheet.create({
   },
   menu: {
     width: "60%",
-    height: "30%",
-    backgroundColor: "#fff",
+    height: "100%",
+    backgroundColor: "#ffffffdc",
     padding: 20,
+
     borderRadius: 10,
     marginTop: 90,
     alignSelf: "flex-end",

@@ -171,23 +171,27 @@ export default function Homepage() {
 
       
       <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="home" size={24} color="#40189D" />
-          <Text style={styles.navTextActive}>Home</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <MaterialIcons name="pan-tool-alt" size={24} color="#BDBDBD" />
-          <Text style={styles.navText}>Interviews</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="chatbubble-ellipses" size={24} color="#BDBDBD" />
-          <Text style={styles.navText}>Chat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="person" size={24} color="#BDBDBD" />
-          <Text style={styles.navText}>Account</Text>
-        </TouchableOpacity>
-      </View>
+                <TouchableOpacity style={styles.navItem}>
+                  <Ionicons name="home" size={24} color="#40189D" />
+                  <Text style={styles.navTextActive}>Home</Text>
+                </TouchableOpacity>
+                {/* <TouchableOpacity style={styles.navItem}>
+                  <Ionicons name="hand-left-outline" size={24} color="#BDBDBD" />
+                  <Text style={styles.navText}>Interviews</Text>
+                </TouchableOpacity> */}
+                <TouchableOpacity style={styles.navItem} onPress={() => router.push("/messages")}>
+                  <Ionicons
+                    name="chatbubble-ellipses-outline"
+                    size={24}
+                    color="#BDBDBD"
+                  />
+                  <Text style={styles.navText}>Chat</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.navItem}>
+                  <Ionicons name="person-outline" size={24} color="#BDBDBD" />
+                  <Text style={styles.navText}>Account</Text>
+                </TouchableOpacity>
+              </View>
     </View>
   );
 }

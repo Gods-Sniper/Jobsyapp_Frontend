@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   Image,
+  ScrollView,
   TextInput,
   TouchableOpacity,
 } from "react-native";
@@ -18,8 +19,8 @@ const Login = () => {
   const [error, setError] = useState("");
 
   const isValidEmail = (email: string) => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
   };
 
   const handleLogin = () => {
@@ -29,8 +30,8 @@ const Login = () => {
       return;
     }
     if (!isValidEmail(email)) {
-    setError('⚠️ Please enter a valid email address.');
-    return;
+      setError("⚠️ Please enter a valid email address.");
+      return;
     }
     setError("");
 
@@ -38,91 +39,96 @@ const Login = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.logoSection}>
-        <Image
-          source={require("../assets/images/logo4.png")}
-          style={styles.logo}
-        />
-        <Text style={styles.logoText}>JobSy</Text>
-      </View>
-      <View style={styles.formSection}>
-        <Text style={styles.signInTitle}>Log In</Text>
-        <Text style={styles.signInSubtitle}>
-          Please sign in to your registered account
-        </Text>
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#40189D"
-            value={email}
-            onChangeText={setEmail}
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <View style={styles.container}>
+        <View style={styles.logoSection}>
+          <Image
+            source={require("../assets/images/logo4.png")}
+            style={styles.logo}
           />
+          <Text style={styles.logoText}>JobSy</Text>
         </View>
-        <View style={styles.inputBox}>
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#40189D"
-            secureTextEntry={!passwordVisible}
-            value={password}
-            onChangeText={setPassword}
-          />
+        <View style={styles.formSection}>
+          <Text style={styles.signInTitle}>Log In</Text>
+          <Text style={styles.signInSubtitle}>
+            Please sign in to your registered account
+          </Text>
+          <View style={styles.inputBox}>
+            <TextInput
+              style={styles.input}
+              placeholder="Email"
+              placeholderTextColor="#40189D"
+              value={email}
+              onChangeText={setEmail}
+            />
+          </View>
+          <View style={styles.inputBox}>
+            <TextInput
+              style={styles.input}
+              placeholder="Password"
+              placeholderTextColor="#40189D"
+              secureTextEntry={!passwordVisible}
+              value={password}
+              onChangeText={setPassword}
+            />
+            <TouchableOpacity
+              style={styles.eyeIconContainer}
+              onPress={() => setPasswordVisible(!passwordVisible)}
+            >
+              <Feather
+                name={passwordVisible ? "eye" : "eye-off"}
+                size={24}
+                color="#40189D"
+                style={styles.eyeIcon}
+              />
+            </TouchableOpacity>
+          </View>
+
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+            <Text style={styles.loginButtonText}>LOGIN</Text>
+          </TouchableOpacity>
+          <View style={styles.resetRow}>
+            <Text style={styles.resetText}>Forgot your password?</Text>
+            <TouchableOpacity>
+              <Text style={styles.resetLink}>Reset here</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.orSignIn}>Or sign in with</Text>
+          <View style={styles.socialRow}>
+            <TouchableOpacity style={styles.socialButton}>
+              <Image
+                source={require("../assets/images/iconGoogle.png")}
+                style={styles.socialIcon}
+              />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.socialButton}>
+              <Image
+                source={require("../assets/images/Facebookimg.png")}
+                style={styles.socialIcon}
+              />
+            </TouchableOpacity>
+          </View>
           <TouchableOpacity
-            style={styles.eyeIconContainer}
-            onPress={() => setPasswordVisible(!passwordVisible)}
+            style={styles.createAccountButton}
+            onPress={() => router.push("/signin")}
           >
-            <Feather
-              name={passwordVisible ? "eye" : "eye-off"}
-              size={24}
-              color="#40189D"
-              style={styles.eyeIcon}
-            />
+            <Text style={styles.createAccountText}>CREATE ACCOUNT</Text>
           </TouchableOpacity>
         </View>
-
-       
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-        <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-          <Text style={styles.loginButtonText}>LOGIN</Text>
-        </TouchableOpacity>
-        <View style={styles.resetRow}>
-          <Text style={styles.resetText}>Forgot your password?</Text>
-          <TouchableOpacity>
-            <Text style={styles.resetLink}>Reset here</Text>
-          </TouchableOpacity>
-        </View>
-        <Text style={styles.orSignIn}>Or sign in with</Text>
-        <View style={styles.socialRow}>
-          <TouchableOpacity style={styles.socialButton}>
-            <Image
-              source={require("../assets/images/iconGoogle.png")}
-              style={styles.socialIcon}
-            />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Image
-              source={require("../assets/images/Facebookimg.png")}
-              style={styles.socialIcon}
-            />
-          </TouchableOpacity>
-        </View>
-        <TouchableOpacity
-          style={styles.createAccountButton}
-          onPress={() => router.push("/signin")}
-        >
-          <Text style={styles.createAccountText}>CREATE ACCOUNT</Text>
-        </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 export default Login;
 
 const styles = StyleSheet.create({
+  scrollContainer: {
+    flexGrow: 1,
+    justifyContent: "center",
+  },
   container: {
     flex: 1,
     backgroundColor: "#F7F3FF",
