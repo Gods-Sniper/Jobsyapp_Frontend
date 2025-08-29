@@ -1,16 +1,17 @@
+import { useRouter } from "expo-router";
+import { setItem } from "expo-secure-store";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
+  Alert,
   Image,
   ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  Alert,
+  View,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
-import { useRouter } from "expo-router";
 
 const Login = () => {
   const router = useRouter();
@@ -51,6 +52,8 @@ const Login = () => {
       .then((response) => response.json())
       .then(async (data) => {
         console.log("response data:", data);
+
+        await setItem("userData", JSON.stringify(data.user)); //store user data
         const { status, message } = data;
 
         if (status === "error") {
@@ -61,7 +64,7 @@ const Login = () => {
             setEmail("");
             setPassword("");
             setTimeout(() => {
-              router.push("/Homepage");
+              router.push("/(tabs)");
             }, 1000);
           }
         }
@@ -73,7 +76,7 @@ const Login = () => {
       <View style={styles.container}>
         <View style={styles.logoSection}>
           <Image
-            source={require("../assets/images/logo4.png")}
+            source={require("../../assets/images/logo4.png")}
             style={styles.logo}
           />
           <Text style={styles.logoText}>JobSy</Text>
@@ -129,13 +132,13 @@ const Login = () => {
           <View style={styles.socialRow}>
             <TouchableOpacity style={styles.socialButton}>
               <Image
-                source={require("../assets/images/iconGoogle.png")}
+                source={require("../../assets/images/iconGoogle.png")}
                 style={styles.socialIcon}
               />
             </TouchableOpacity>
             <TouchableOpacity style={styles.socialButton}>
               <Image
-                source={require("../assets/images/Facebookimg.png")}
+                source={require("../../assets/images/Facebookimg.png")}
                 style={styles.socialIcon}
               />
             </TouchableOpacity>

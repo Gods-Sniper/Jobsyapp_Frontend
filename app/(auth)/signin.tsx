@@ -1,18 +1,15 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
+  ScrollView,
+  StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  Alert,
+  View,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { push } from "expo-router/build/global-state/routing";
 
 const SignIn = () => {
   const router = useRouter();
@@ -25,7 +22,7 @@ const SignIn = () => {
 
   const local = useLocalSearchParams();
   console.log(local.role);
-  
+
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -63,9 +60,14 @@ const SignIn = () => {
     // console.log(body);
     router.push({
       pathname: "/signin2",
-      params: { name: name, phone: phone, email: email, password: password, role: local.role },
+      params: {
+        name: name,
+        phone: phone,
+        email: email,
+        password: password,
+        role: local.role,
+      },
     });
-    
   };
 
   // const handleSubmit = () => {
@@ -118,7 +120,7 @@ const SignIn = () => {
       <View style={styles.container}>
         <View style={styles.logoSection}>
           <Image
-            source={require("../assets/images/logo4.png")}
+            source={require("../../assets/images/logo4.png")}
             style={styles.logo}
           />
           <Text style={styles.logoText}>JobSy</Text>

@@ -1,21 +1,20 @@
-import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  Alert,
-  Platform,
-  Modal,
-  Dimensions,
-} from "react-native";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
 import { router, useLocalSearchParams } from "expo-router";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useState } from "react";
+import {
+  Alert,
+  Dimensions,
+  Image,
+  Modal,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 
 // Define the file type interface
 interface FileType {
@@ -238,7 +237,6 @@ const SignIn2 = () => {
       "role",
       Array.isArray(local.role) ? local.role[0] : local.role ?? ""
     );
-    
 
     if (files.nationalId) {
       formData.append("nationalId", {
@@ -358,7 +356,7 @@ const SignIn2 = () => {
       <View style={styles.container}>
         <View style={styles.logoSection}>
           <Image
-            source={require("../assets/images/logo4.png")}
+            source={require("../../assets/images/logo4.png")}
             style={styles.logo}
           />
         </View>
@@ -503,7 +501,7 @@ const SignIn2 = () => {
 
           <View style={styles.bottomLogoSection}>
             <Image
-              source={require("../assets/images/logo2.png")}
+              source={require("../../assets/images/logo2.png")}
               style={styles.bottomLogo}
             />
           </View>

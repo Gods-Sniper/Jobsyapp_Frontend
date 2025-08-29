@@ -1,22 +1,23 @@
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { deleteItemAsync } from "expo-secure-store";
 import React from "react";
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
-  TouchableOpacity,
   SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 
 export default function AccountScreen() {
-    const router = useRouter();
+  const router = useRouter();
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.headerBg}>
         <Image
-          source={require("../assets/images/image.png")}
+          source={require("../../assets/images/image.png")}
           style={styles.bgImage}
           resizeMode="cover"
         />
@@ -26,7 +27,7 @@ export default function AccountScreen() {
         </View>
         <View style={styles.avatarWrapper}>
           <Image
-            source={require("../assets/images/Group 8.png")}
+            source={require("../../assets/images/Group 8.png")}
             style={styles.avatar}
           />
         </View>
@@ -56,6 +57,15 @@ export default function AccountScreen() {
           </View>
           <Ionicons name="ellipsis-vertical" size={22} color="#fff" />
         </View>
+        <TouchableOpacity
+          onPress={async () => {
+            await deleteItemAsync("userData");
+            router.dismissTo("/(auth)/login");
+          }}
+          style={{ marginBottom: 18 }}
+        >
+          <Text>Logout</Text>
+        </TouchableOpacity>
         <View style={styles.statsRow}>
           <View style={styles.statCardPurple}>
             <Text style={styles.statNumber}>29</Text>
@@ -78,28 +88,6 @@ export default function AccountScreen() {
             />
           </View>
         </View>
-      </View>
-      <View style={styles.bottomNav}>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push("/Homepage")}>
-          <Ionicons name="home" size={24} color="#BDBDBD" />
-          <Text style={styles.navText}>Home</Text>
-        </TouchableOpacity>
-        {/* <TouchableOpacity style={styles.navItem} onPress={() => router.push("/interview")}>
-          <Ionicons name="hand-left-outline" size={24} color="#BDBDBD" />
-          <Text style={styles.navText}>Interviews</Text>
-        </TouchableOpacity> */}
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push("/messages")}>
-          <Ionicons
-            name="chatbubble-ellipses-outline"
-            size={24}
-            color="#BDBDBD"
-          />
-          <Text style={styles.navText}>Chat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.navItem} onPress={() => router.push("/account")}>
-          <Ionicons name="person" size={24} color="#40189D" />
-          <Text style={styles.navTextActive}>Account</Text>
-        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
