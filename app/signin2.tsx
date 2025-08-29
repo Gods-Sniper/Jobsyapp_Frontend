@@ -14,6 +14,8 @@ import {
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import * as DocumentPicker from "expo-document-picker";
 import * as ImagePicker from "expo-image-picker";
+import { router, useLocalSearchParams } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define the file type interface
 interface FileType {
@@ -24,7 +26,6 @@ interface FileType {
 }
 
 type FileField = "nationalId" | "cv" | "judiciary";
-
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get("window");
 
 const SignIn2 = () => {
@@ -34,12 +35,15 @@ const SignIn2 = () => {
     judiciary: null,
   });
 
+  const local = useLocalSearchParams();
+  console.log("local: ", local);
   const [previewVisible, setPreviewVisible] = useState(false);
   const [currentPreview, setCurrentPreview] = useState<FileType | null>(null);
 
   type ErrorsType = Partial<Record<FileField, string>>;
   const [errors, setErrors] = useState<ErrorsType>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isloading, setIsloading] = useState(false);
 
   const allowedFileTypes = [
     "application/pdf",
@@ -207,20 +211,88 @@ const SignIn2 = () => {
   };
 
   const handleSubmit = () => {
+    setIsloading(true);
     if (validateForm()) {
-      setIsSubmitting(true);
-      setTimeout(() => {
-        setIsSubmitting(false);
-        Alert.alert(
-          "Success",
-          "Your documents have been uploaded successfully!",
-          [{ text: "OK", onPress: () => console.log("OK Pressed") }]
-        );
-        // router.push('/Homepage');
-      }, 1500);
     } else {
       Alert.alert("Validation Error", "Please upload all required documents");
     }
+    const formData = new FormData();
+
+    formData.append(
+      "name",
+      Array.isArray(local.name) ? local.name[0] : local.name ?? ""
+    );
+    formData.append(
+      "phone",
+      Array.isArray(local.phone) ? local.phone[0] : local.phone ?? ""
+    );
+    formData.append(
+      "email",
+      Array.isArray(local.email) ? local.email[0] : local.email ?? ""
+    );
+    formData.append(
+      "password",
+      Array.isArray(local.password) ? local.password[0] : local.password ?? ""
+    );
+    formData.append(
+      "role",
+      Array.isArray(local.role) ? local.role[0] : local.role ?? ""
+    );
+    
+
+    if (files.nationalId) {
+      formData.append("nationalId", {
+        uri: files.nationalId.uri,
+        name: files.nationalId.name,
+        type: files.nationalId.type,
+      } as any);
+    }
+    if (files.cv) {
+      formData.append("cv", {
+        uri: files.cv.uri,
+        name: files.cv.name,
+        type: files.cv.type,
+      } as any);
+    }
+
+    if (files.judiciary) {
+      formData.append("judiciary", {
+        uri: files.judiciary.uri,
+        name: files.judiciary.name,
+        type: files.judiciary.type,
+      } as any);
+    }
+
+    let body = formData;
+    console.log("body", body);
+    fetch("http://192.168.100.150:4000/api/users/signup", {
+      method: "POST",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      body: body,
+    })
+      .then((response) => response.json())
+      .then(async (data) => {
+        console.log("response data:", data);
+        const { status, message } = data;
+
+        if (status === "error") {
+          Alert.alert("Ouups: ", message);
+        } else {
+          if (status === "success") {
+            Alert.alert("Great !!: ", message);
+
+            setFiles({ nationalId: null, cv: null, judiciary: null });
+            setTimeout(() => {
+              router.push("/login");
+            }, 1000);
+          }
+        }
+      })
+
+      .catch((error) => console.error("Error:", error))
+      .finally(() => setIsloading(false));
   };
 
   const removeFile = (fileType: FileField) => {
@@ -413,13 +485,13 @@ const SignIn2 = () => {
           <TouchableOpacity
             style={[
               styles.signupButton,
-              isSubmitting && styles.signupButtonDisabled,
+              isloading && styles.signupButtonDisabled,
             ]}
             onPress={handleSubmit}
-            disabled={isSubmitting}
+            disabled={isloading}
           >
             <Text style={styles.signupButtonText}>
-              {isSubmitting ? "UPLOADING..." : "SIGN UP"}
+              {isloading ? "Signing up..." : "SIGN UP"}
             </Text>
           </TouchableOpacity>
 

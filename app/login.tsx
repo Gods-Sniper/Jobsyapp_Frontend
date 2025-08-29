@@ -7,6 +7,7 @@ import {
   ScrollView,
   TextInput,
   TouchableOpacity,
+  Alert,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
 import { useRouter } from "expo-router";
@@ -14,8 +15,8 @@ import { useRouter } from "expo-router";
 const Login = () => {
   const router = useRouter();
   const [passwordVisible, setPasswordVisible] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("percy@gmail.com");
+  const [password, setPassword] = useState("1234567890");
   const [error, setError] = useState("");
 
   const isValidEmail = (email: string) => {
@@ -35,7 +36,36 @@ const Login = () => {
     }
     setError("");
 
-    router.push("/Homepage");
+    let body = JSON.stringify({
+      email: email,
+      password: password,
+    });
+    fetch("http://192.168.100.150:4000/api/users/signin", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        charset: "utf-8",
+      },
+      body: body,
+    })
+      .then((response) => response.json())
+      .then(async (data) => {
+        console.log("response data:", data);
+        const { status, message } = data;
+
+        if (status === "error") {
+          Alert.alert("Ouups: ", message);
+        } else {
+          if (status === "success") {
+            Alert.alert("Great !!: ", message);
+            setEmail("");
+            setPassword("");
+            setTimeout(() => {
+              router.push("/Homepage");
+            }, 1000);
+          }
+        }
+      });
   };
 
   return (

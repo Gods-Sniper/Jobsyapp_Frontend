@@ -120,27 +120,27 @@ export default function MessagesScreen() {
   const [search, setSearch] = useState("");
   const router = useRouter();
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item: any }) => (
     <TouchableOpacity style={styles.messageRow}>
       <View>
-        <Image source={item.avatar} style={styles.avatar} />
-        {item.online && <View style={styles.onlineDot} />}
-        {item.name === "Rose Melati" && <View style={styles.purpleDot} />}
+        <Image source={item?.avatar} style={styles.avatar} />
+        {item?.online && <View style={styles.onlineDot} />}
+        {item?.name === "Rose Melati" && <View style={styles.purpleDot} />}
       </View>
       <View style={{ flex: 1, marginLeft: 12 }}>
         <Text
           style={[
             styles.name,
-            item.bold && { fontWeight: "bold", color: "#40189D" },
+            item?.bold && { fontWeight: "bold", color: "#40189D" },
           ]}
         >
-          {item.name}
+          {item?.name}
         </Text>
         <Text style={styles.messageText}>{item.message}</Text>
       </View>
       <View style={{ alignItems: "flex-end" }}>
         <Text style={styles.time}>{item.time}</Text>
-        {item.status === "Read" && (
+        {item?.status === "Read" && (
           <View style={styles.statusRow}>
             <Text style={styles.readText}>Read</Text>
             <MaterialIcons
@@ -151,7 +151,7 @@ export default function MessagesScreen() {
             />
           </View>
         )}
-        {item.status === "Unread" && (
+        {item?.status === "Unread" && (
           <View style={styles.statusRow}>
             <Text style={styles.unreadText}>Unread</Text>
             <MaterialIcons
@@ -162,7 +162,7 @@ export default function MessagesScreen() {
             />
           </View>
         )}
-        {item.status === "Pending" && (
+        {item?.status === "Pending" && (
           <Text style={styles.pendingText}>Pending</Text>
         )}
       </View>
@@ -204,7 +204,10 @@ export default function MessagesScreen() {
           <Text style={styles.newChatText}>New Chat</Text>
         </TouchableOpacity>
         <View style={styles.bottomNav}>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push("/Homepage")}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push("/Homepage")}
+          >
             <Ionicons name="home" size={24} color="#BDBDBD" />
             <Text style={styles.navText}>Home</Text>
           </TouchableOpacity>
@@ -212,11 +215,17 @@ export default function MessagesScreen() {
             <Ionicons name="hand-left-outline" size={24} color="#BDBDBD" />
             <Text style={styles.navText}>Interviews</Text>
           </TouchableOpacity> */}
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push("/messages")}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push("/messages")}
+          >
             <Ionicons name="chatbubble-ellipses" size={24} color="#40189D" />
             <Text style={styles.navTextActive}>Chat</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.navItem} onPress={() => router.push("/account")}>
+          <TouchableOpacity
+            style={styles.navItem}
+            onPress={() => router.push("/account")}
+          >
             <Ionicons name="person-outline" size={24} color="#BDBDBD" />
             <Text style={styles.navText}>Account</Text>
           </TouchableOpacity>

@@ -7,9 +7,12 @@ import {
   TextInput,
   TouchableOpacity,
   ScrollView,
+  Alert,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { push } from "expo-router/build/global-state/routing";
 
 const SignIn = () => {
   const router = useRouter();
@@ -20,6 +23,9 @@ const SignIn = () => {
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
 
+  const local = useLocalSearchParams();
+  console.log(local.role);
+  
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
@@ -48,8 +54,64 @@ const SignIn = () => {
       return;
     }
     setError("");
-    router.push("/signin2");
+    // let body = JSON.stringify({
+    //   name: name,
+    //   phone: phone,
+    //   email: email,
+    //   password: password,
+    // });
+    // console.log(body);
+    router.push({
+      pathname: "/signin2",
+      params: { name: name, phone: phone, email: email, password: password, role: local.role },
+    });
+    
   };
+
+  // const handleSubmit = () => {
+  //             let body = JSON.stringify({
+  //               name: name,
+  //               phone: phone,
+  //               email: email,
+  //               password: password,
+  //             });
+  //             console.log(body);
+  //             fetch("http://192.168.100.150:4000/api/user", {
+  //               method: "POST",
+  //               headers: {
+  //                 "Content-Type": "application/json",
+  //                 "charset": "UTF-8"
+  //               },
+  //               body: body
+  //             })
+  //               .then((response) => response.json())
+  //                .then(async(data) => {
+  //                   const {status, message} = data
+
+  //                   if(status === 'error'){
+  //                     Alert.alert("Ouups: ", message)
+  //                   }else {
+  //                     if(status === 200){
+  //                        Alert.alert("Great !!: ", message)
+  //                        try {
+  //                         await AsyncStorage.setItem('username', name);
+  //                         console.log("Username saved successfully");
+  //                       } catch (error) {
+  //                         console.error("Failed to save username:", error);
+  //                       }
+  //                       setEmail("")
+  //                        setName("")
+  //                        setPassword("")
+  //                        setPhone("")
+  //                        setTimeout(() => {router.push('/signin2')
+  //                        }, 1000)
+  //                     }
+  //                   }
+  //                 })
+
+  //               .catch((error) => console.error("Error:", error));
+  //           };
+  //           handleSubmit();
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

@@ -1,38 +1,49 @@
-import React from 'react';
-import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
-import { useRouter } from 'expo-router';
+import React from "react";
+import { View, Text, StyleSheet, Image, Pressable } from "react-native";
+import { useRouter } from "expo-router";
 
 const WelcomePage = () => {
-    const router = useRouter();
+  const router = useRouter();
+  const [role, setRole] = React.useState<"jobseeker" | "jobprovider" | null>(
+    null
+  );
   return (
     <View style={styles.container}>
       <View style={styles.logoSection}>
         <Image
-          source={require('../assets/images/logo4.png')}
+          source={require("../assets/images/logo4.png")}
           style={styles.logo}
         />
         <Text style={styles.logoText}>JobSy</Text>
       </View>
       <View style={styles.contentSection}>
         <Text style={styles.continueAs}>Continue as</Text>
-        <Text style={styles.subtitle}>Ready to start this experience{'\n'}with us ?</Text>
+        <Text style={styles.subtitle}>
+          Ready to start this experience{"\n"}with us ?
+        </Text>
         <View style={styles.options}>
           <Pressable
             style={({ pressed }) => [
               styles.optionBox,
               pressed && styles.optionBoxPressed,
             ]}
-            onPress={() => router.push('/login')}
+            onPress={() => {
+              setRole("jobseeker");
+              router.push({
+                pathname: "/signin",
+                params: { role: "jobseeker" },
+              });
+            }}
           >
-            <View style={styles.optionRow} >
+            <View style={styles.optionRow}>
               <Image
-                source={require('../assets/images/jobseekerimg.png')}
+                source={require("../assets/images/jobseekerimg.png")}
                 style={styles.optionIcon}
               />
               <View style={styles.optionTextContainer}>
                 <Text style={styles.optionTitle}>JOB SEEKER</Text>
                 <Text style={styles.optionDesc}>
-                  Finding a job here never{'\n'}been easier than before
+                  Finding a job here never{"\n"}been easier than before
                 </Text>
               </View>
             </View>
@@ -42,17 +53,23 @@ const WelcomePage = () => {
               styles.optionBox,
               pressed && styles.optionBoxPressed,
             ]}
-            onPress={() => router.push('/login')}
+            onPress={() => {
+              setRole("jobprovider");
+              router.push({
+                pathname: "/signin",
+                params: { role: "jobprovider" },
+              });
+            }}
           >
             <View style={styles.optionRow}>
               <Image
-                source={require('../assets/images/jobproviderimg.png')}
+                source={require("../assets/images/jobproviderimg.png")}
                 style={styles.optionIcon}
               />
               <View style={styles.optionTextContainer}>
                 <Text style={styles.optionTitle}>JOB PROVIDER</Text>
                 <Text style={styles.optionDesc}>
-                  Let’s recruit your great{'\n'}candidate faster here
+                  Let’s recruit your great{"\n"}candidate faster here
                 </Text>
               </View>
             </View>
@@ -68,12 +85,12 @@ export default WelcomePage;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F7F3FF',
-    alignItems: 'center',
+    backgroundColor: "#F7F3FF",
+    alignItems: "center",
     paddingTop: 60,
   },
   logoSection: {
-    alignItems: 'center',
+    alignItems: "center",
     marginBottom: 40,
   },
   logo: {
@@ -83,52 +100,51 @@ const styles = StyleSheet.create({
   },
   logoText: {
     fontSize: 32,
-    fontWeight: 'bold',
-    color: '#40189D',
-    fontFamily: 'Poppins bold-italic',
-    
+    fontWeight: "bold",
+    color: "#40189D",
+    fontFamily: "Poppins bold-italic",
   },
   contentSection: {
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   continueAs: {
     fontSize: 30,
-    fontWeight: 'bold',
-    color: '#000',
+    fontWeight: "bold",
+    color: "#000",
     marginBottom: 8,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     marginLeft: 40,
   },
   subtitle: {
     fontSize: 15,
-    color: '#505050ff',
+    color: "#505050ff",
     marginBottom: 18,
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     marginLeft: 40,
   },
   options: {
-    width: '100%',
-    alignItems: 'center',
+    width: "100%",
+    alignItems: "center",
   },
   optionBox: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     borderRadius: 20,
     padding: 18,
     marginBottom: 18,
-    width: '85%',
-    shadowColor: '#40189D',
+    width: "85%",
+    shadowColor: "#40189D",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 8,
     elevation: 2,
   },
   optionBoxPressed: {
-    backgroundColor: '#ECE6F6',
+    backgroundColor: "#ECE6F6",
   },
   optionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
   },
   optionIcon: {
     width: 48,
@@ -139,13 +155,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   optionTitle: {
-    color: '#40189D',
-    fontWeight: 'bold',
+    color: "#40189D",
+    fontWeight: "bold",
     fontSize: 16,
     marginBottom: 4,
   },
   optionDesc: {
-    color: '#6B6B6B',
+    color: "#6B6B6B",
     fontSize: 14,
     lineHeight: 20,
   },
