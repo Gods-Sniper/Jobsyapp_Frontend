@@ -86,7 +86,7 @@ export default function TabLayout() {
         options={{
           title: "Notification",
           tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="bag.fill" color={color} />
+            <IconSymbol size={28} name="bell" color={color} />
           ),
         }}
       />

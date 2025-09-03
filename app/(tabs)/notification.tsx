@@ -29,7 +29,7 @@ export default function NotificationScreen() {
       try {
         const token = await AsyncStorage.getItem("token");
         const response = await fetch(
-          "http://192.168.100.150:4000/api/notifications/",
+          "http://192.168.100.150:4000/api/notification/",
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -66,6 +66,7 @@ export default function NotificationScreen() {
           source={require("../../assets/images/logo2.png")}
           style={styles.logo}
         />
+        <Ionicons name="notifications" size={28} color="#40189D" />
       </View>
 
       {loading ? (
@@ -142,7 +143,7 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   dotUnread: {
-    width: 10,
+    width: 20,
     height: 10,
     borderRadius: 5,
     backgroundColor: "#fff",
@@ -151,7 +152,7 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 17,
+    fontSize: 350,
     marginBottom: 2,
   },
   cardMsg: {

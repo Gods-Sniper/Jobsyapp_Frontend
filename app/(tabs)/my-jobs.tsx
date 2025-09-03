@@ -204,12 +204,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
   },
   name: {
-    fontSize: 18,
+    fontSize: 30,
     color: "#181818",
     fontWeight: "bold",
   },
   message: {
-    fontSize: 14,
+    fontSize: 20,
     color: "#6B6B6B",
     marginTop: 2,
     marginBottom: 10,

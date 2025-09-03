@@ -1,7 +1,7 @@
+import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { deleteItemAsync } from "expo-secure-store";
-import React from "react";
 import {
   Image,
   SafeAreaView,
@@ -13,27 +13,22 @@ import {
 
 export default function AccountScreen() {
   const router = useRouter();
+  const [user, setUser] = useState("");
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.headerBg}>
-        <Image
-          source={require("../../assets/images/image.png")}
-          style={styles.bgImage}
-          resizeMode="cover"
-        />
         <View style={styles.headerRow}>
-          <Text style={styles.headerText}>Account</Text>
           <Ionicons name="ellipsis-vertical" size={26} color="#fff" />
         </View>
         <View style={styles.avatarWrapper}>
-          <Image
-            source={require("../../assets/images/Group 8.png")}
-            style={styles.avatar}
-          />
+          <View style={styles.logoCircle}>
+            <Text style={styles.logoText}>{user?.[0]?.toUpperCase()}</Text>
+          </View>
         </View>
       </View>
       <View style={styles.content}>
-        <Text style={styles.name}>Henry Kanwil</Text>
+        <Text style={styles.name}>{user}</Text>
         <Text style={styles.role}>Programmer</Text>
         <Text style={styles.bio}>
           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
@@ -96,13 +91,10 @@ export default function AccountScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#F8F4FF" },
   headerBg: {
-    height: 180,
-    backgroundColor: "#181818",
+    marginTop: 40,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    overflow: "hidden",
-    position: "relative",
-    marginBottom: 60,
+    marginBottom: 10,
   },
   bgImage: {
     ...StyleSheet.absoluteFillObject,
@@ -138,6 +130,19 @@ const styles = StyleSheet.create({
     borderWidth: 5,
     borderColor: "#fff",
     backgroundColor: "#fff",
+  },
+  logoCircle: {
+    width: 100,
+    height: 100,
+    borderRadius: 18,
+    backgroundColor: "#40189D",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  logoText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 200,
   },
   content: {
     alignItems: "center",

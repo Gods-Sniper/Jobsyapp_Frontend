@@ -83,7 +83,7 @@ export const Home = () => {
       });
       const data = await response.json();
 
-      // Sort jobs by createdAt (most recent first)
+     
       const mappedJobs = data
         .map((job: any) => ({
           id: job._id || job.id,
@@ -110,19 +110,19 @@ export const Home = () => {
     }
   };
 
-  // Initial fetch
+ 
   useEffect(() => {
     fetchJobs();
   }, []);
 
-  // Auto-refresh when screen is focused (after creating a job)
+ 
   useFocusEffect(
     React.useCallback(() => {
       fetchJobs();
     }, [])
   );
 
-  // Pull-to-refresh handler
+ 
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchJobs();
