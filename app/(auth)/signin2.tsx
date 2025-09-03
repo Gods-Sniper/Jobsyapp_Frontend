@@ -15,6 +15,8 @@ import {
   View,
 } from "react-native";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { setItem } from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // Define the file type interface
 interface FileType {
@@ -35,7 +37,7 @@ const SignIn2 = () => {
   });
 
   const local = useLocalSearchParams();
-  console.log("local: ", local);
+
   const [previewVisible, setPreviewVisible] = useState(false);
   const [currentPreview, setCurrentPreview] = useState<FileType | null>(null);
 
@@ -280,8 +282,15 @@ const SignIn2 = () => {
         } else {
           if (status === "success") {
             Alert.alert("Great !!: ", message);
-
             setFiles({ nationalId: null, cv: null, judiciary: null });
+            if (data.token) {
+              await AsyncStorage.setItem("token", data.token);
+            } else {
+              await AsyncStorage.removeItem("token");
+            }
+            if (data.user) {
+              await AsyncStorage.setItem("user", JSON.stringify(data.user));
+            }
             setTimeout(() => {
               router.push("/login");
             }, 1000);
@@ -499,12 +508,12 @@ const SignIn2 = () => {
             <Text style={styles.termsLink}>condition</Text>
           </Text>
 
-          <View style={styles.bottomLogoSection}>
+          {/* <View style={styles.bottomLogoSection}>
             <Image
               source={require("../../assets/images/logo2.png")}
               style={styles.bottomLogo}
             />
-          </View>
+          </View> */}
         </View>
       </View>
 

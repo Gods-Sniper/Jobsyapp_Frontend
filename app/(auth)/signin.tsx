@@ -51,13 +51,7 @@ const SignIn = () => {
       return;
     }
     setError("");
-    // let body = JSON.stringify({
-    //   name: name,
-    //   phone: phone,
-    //   email: email,
-    //   password: password,
-    // });
-    // console.log(body);
+    
     router.push({
       pathname: "/signin2",
       params: {
@@ -69,51 +63,6 @@ const SignIn = () => {
       },
     });
   };
-
-  // const handleSubmit = () => {
-  //             let body = JSON.stringify({
-  //               name: name,
-  //               phone: phone,
-  //               email: email,
-  //               password: password,
-  //             });
-  //             console.log(body);
-  //             fetch("http://192.168.100.150:4000/api/user", {
-  //               method: "POST",
-  //               headers: {
-  //                 "Content-Type": "application/json",
-  //                 "charset": "UTF-8"
-  //               },
-  //               body: body
-  //             })
-  //               .then((response) => response.json())
-  //                .then(async(data) => {
-  //                   const {status, message} = data
-
-  //                   if(status === 'error'){
-  //                     Alert.alert("Ouups: ", message)
-  //                   }else {
-  //                     if(status === 200){
-  //                        Alert.alert("Great !!: ", message)
-  //                        try {
-  //                         await AsyncStorage.setItem('username', name);
-  //                         console.log("Username saved successfully");
-  //                       } catch (error) {
-  //                         console.error("Failed to save username:", error);
-  //                       }
-  //                       setEmail("")
-  //                        setName("")
-  //                        setPassword("")
-  //                        setPhone("")
-  //                        setTimeout(() => {router.push('/signin2')
-  //                        }, 1000)
-  //                     }
-  //                   }
-  //                 })
-
-  //               .catch((error) => console.error("Error:", error));
-  //           };
-  //           handleSubmit();
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

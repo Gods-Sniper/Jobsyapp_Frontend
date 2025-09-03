@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import React from "react";
 import {
   ScrollView,
@@ -7,114 +8,218 @@ import {
   TouchableOpacity,
   View,
   StyleSheet,
+  RefreshControl,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import DropDownPicker from "react-native-dropdown-picker";
 
-const jobs = [
-  {
-    id: 1,
-    user: "la_voisine_du_quartier",
-    time: "46mins ago",
-    status: "Pending",
-    title: "Couller la  dale de 30m² chocho, avec koki à l’appui",
-    price: "3k – 5k XAF/jour",
-    days: "2 jours",
-    priceColor: "#3ED598",
-    statusColor: "#E6F0FF",
-    statusTextColor: "#6C8EFF",
-    icon: "checkmark-circle",
-    iconBg: "#F3F0FF",
-    iconColor: "#40189D",
-  },
-  {
-    id: 2,
-    user: "maa_chann",
-    time: "3h ago",
-    status: "Negotiating",
-    title: "Vider la poubelle de Ma’a Chan cette semaine",
-    price: "2k XAF/jour",
-    days: "5 jours",
-    priceColor: "#3ED598",
-    statusColor: "#FFF6E6",
-    statusTextColor: "#FFB200",
-    icon: "checkmark-circle",
-    iconBg: "#F3F0FF",
-    iconColor: "#40189D",
-  },
-
-  {
-    id: 3,
-    user: "maa_chantale",
-    time: "3h ago",
-    status: "Negotiating",
-    title: "Vider la poubelle de Ma’a Chan cette semaine",
-    price: "2k XAF/jour",
-    days: "5 jours",
-    priceColor: "#3ED598",
-    statusColor: "#FFF6E6",
-    statusTextColor: "#FFB200",
-    icon: "checkmark-circle",
-    iconBg: "#F3F0FF",
-    iconColor: "#40189D",
-  },
-
-  {
-    id: 4,
-    user: "maa_chocolate",
-    time: "3h ago",
-    status: "Negotiating",
-    title: "Vider la poubelle de Ma’a Chan cette semaine",
-    price: "2k XAF/jour",
-    days: "5 jours",
-    priceColor: "#3ED598",
-    statusColor: "#FFF6E6",
-    statusTextColor: "#FFB200",
-    icon: "checkmark-circle",
-    iconBg: "#F3F0FF",
-    iconColor: "#40189D",
-  },
-];
+type Job = {
+  id: string;
+  user: string;
+  duration: string;
+  status: string;
+  title: string;
+  description: string;
+  createdAt: string;
+  salary: string;
+  days: string;
+};
 
 export const Home = () => {
   const router = useRouter();
+  const [user, setUser] = useState("");
+  const [jobs, setJobs] = useState<Job[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  // Dropdown states (unchanged)
+  const [typeOpen, setTypeOpen] = useState(false);
+  const [typeValue, setTypeValue] = useState(null);
+  const [typeItems, setTypeItems] = useState([
+    { label: "Chocho", value: "chocho" },
+    { label: "Cleaning", value: "cleaning" },
+    { label: "Gardening", value: "gardening" },
+  ]);
+  const [statusOpen, setStatusOpen] = useState(false);
+  const [statusValue, setStatusValue] = useState(null);
+  const [statusItems, setStatusItems] = useState([
+    { label: "Pending", value: "pending" },
+    { label: "Negotiating", value: "negotiating" },
+    { label: "Completed", value: "completed" },
+  ]);
+  const [proximityOpen, setProximityOpen] = useState(false);
+  const [proximityValue, setProximityValue] = useState(null);
+  const [proximityItems, setProximityItems] = useState([
+    { label: "Near me", value: "near" },
+    { label: "Far", value: "far" },
+  ]);
+  const [publishedOpen, setPublishedOpen] = useState(false);
+  const [publishedValue, setPublishedValue] = useState(null);
+  const [publishedItems, setPublishedItems] = useState([
+    { label: "Recent", value: "recent" },
+    { label: "Old", value: "old" },
+  ]);
+
+  useEffect(() => {
+    AsyncStorage.getItem("user").then((data) => {
+      if (data) {
+        try {
+          const userObj = JSON.parse(data);
+          setUser(userObj.username || userObj.name || "");
+        } catch (e) {
+          setUser("");
+        }
+      }
+    });
+  }, []);
+
+  // Fetch jobs function
+  const fetchJobs = async () => {
+    try {
+      const token = await AsyncStorage.getItem("token");
+      const response = await fetch("http://192.168.100.150:4000/api/jobs/", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await response.json();
+
+      // Sort jobs by createdAt (most recent first)
+      const mappedJobs = data
+        .map((job: any) => ({
+          id: job._id || job.id,
+          user:
+            job.postedBy?.name ||
+            job.postedBy?.username ||
+            job.postedBy ||
+            "Unknown",
+          description: job.description,
+          duration: job.duration,
+          status: job.status,
+          createdAt: job.createdAt,
+          title: job.title,
+          salary: job.salary,
+          days: job.days,
+        }))
+        .sort(
+          (a: { createdAt: string | number | Date; }, b: { createdAt: string | number | Date; }) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      setJobs(mappedJobs);
+    } catch (error) {
+      console.error("Failed to fetch jobs:", error);
+    }
+  };
+
+  // Initial fetch
+  useEffect(() => {
+    fetchJobs();
+  }, []);
+
+  // Auto-refresh when screen is focused (after creating a job)
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchJobs();
+    }, [])
+  );
+
+  // Pull-to-refresh handler
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await fetchJobs();
+    setRefreshing(false);
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
           <Text style={styles.helloText}>
-            Yo, <Text style={styles.helloName}>Jojo</Text>
+            Yo, <Text style={styles.helloName}> {user}</Text>
           </Text>
           <Text style={styles.helloSub}>Paul Messi, Yaoundé</Text>
         </View>
-        <View style={styles.headerRight}>
-          <View style={styles.logoCircle}>
-            <Text style={styles.logoText}>J</Text>
+        <TouchableOpacity onPress={() => router.push("/account")}>
+          <View style={styles.headerRight}>
+            <View style={styles.logoCircle}>
+              <Text style={styles.logoText}>{user?.[0]?.toUpperCase()}</Text>
+            </View>
           </View>
-        </View>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.filtersRow}>
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>Type</Text>
-          <Text style={styles.filterValue}>Chocho</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>Status</Text>
-          <Text style={styles.filterValue}>Pending</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>Proximity</Text>
-          <Text style={styles.filterValue}>Near me</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>Published</Text>
-          <Text style={styles.filterValue}>Recent</Text>
-        </TouchableOpacity>
+        <View style={{ flex: 1, marginRight: 6 }}>
+          <DropDownPicker
+            open={typeOpen}
+            value={typeValue}
+            items={typeItems}
+            setOpen={setTypeOpen}
+            setValue={setTypeValue}
+            setItems={setTypeItems}
+            placeholder="Type"
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            zIndex={4000}
+            zIndexInverse={1000}
+          />
+        </View>
+        <View style={{ flex: 1, marginRight: 6 }}>
+          <DropDownPicker
+            open={statusOpen}
+            value={statusValue}
+            items={statusItems}
+            setOpen={setStatusOpen}
+            setValue={setStatusValue}
+            setItems={setStatusItems}
+            placeholder="Status"
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            zIndex={3000}
+            zIndexInverse={2000}
+          />
+        </View>
+        <View style={{ flex: 1, marginRight: 6 }}>
+          <DropDownPicker
+            open={proximityOpen}
+            value={proximityValue}
+            items={proximityItems}
+            setOpen={setProximityOpen}
+            setValue={setProximityValue}
+            setItems={setProximityItems}
+            placeholder="Proximity"
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            zIndex={2000}
+            zIndexInverse={3000}
+          />
+        </View>
+        <View style={{ flex: 1 }}>
+          <DropDownPicker
+            open={publishedOpen}
+            value={publishedValue}
+            items={publishedItems}
+            setOpen={setPublishedOpen}
+            setValue={setPublishedValue}
+            setItems={setPublishedItems}
+            placeholder="Published"
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+            zIndex={1000}
+            zIndexInverse={4000}
+          />
+        </View>
       </View>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         {jobs.map((job) => (
           <TouchableOpacity
-            key={job.id}
+            key={job.id?.toString()}
             style={styles.jobCard}
             onPress={() =>
               router.push({
@@ -126,38 +231,52 @@ export const Home = () => {
             <View style={styles.jobHeader}>
               <View style={styles.avatarCircle}>
                 <Text style={styles.avatarText}>
-                  {job.user[0].toUpperCase()}
+                  {job.user?.[0]?.toUpperCase()}
                 </Text>
               </View>
               <View style={{ flex: 1, marginLeft: 8 }}>
                 <Text style={styles.jobUser}>By {job.user}</Text>
-                <Text style={styles.jobTime}>{job.time}</Text>
+                <Text style={styles.jobTime}>
+                  {job.createdAt
+                    ? (() => {
+                        const now = new Date();
+                        const created = new Date(job.createdAt);
+                        const diffMs = now.getTime() - created.getTime();
+                        const diffMins = Math.floor(diffMs / (1000 * 60));
+                        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                        const diffDays = Math.floor(
+                          diffMs / (1000 * 60 * 60 * 24)
+                        );
+                        if (diffMins < 60) return `${diffMins} mins ago`;
+                        if (diffHours < 24) return `${diffHours} hours ago`;
+                        return `${diffDays} days ago`;
+                      })()
+                    : ""}
+                </Text>
               </View>
               <View
-                style={[
-                  styles.statusBadge,
-                  { backgroundColor: job.statusColor },
-                ]}
+                style={[styles.statusBadge, { backgroundColor: "#E6F0FF" }]}
               >
-                <Text
-                  style={[styles.statusText, { color: job.statusTextColor }]}
-                >
-                  {job.status}
+                <Text style={[styles.statusText, { color: "#6C8EFF" }]}>
+                  {job.status || "Pending"}
                 </Text>
               </View>
             </View>
             <Text style={styles.jobTitle}>{job.title}</Text>
+            <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
+              {job.description}
+            </Text>
             <View style={styles.jobInfoRow}>
               <View style={styles.infoItem}>
-                <Ionicons name="pricetag" size={18} color={job.priceColor} />
-                <Text style={[styles.infoText, { color: job.priceColor }]}>
-                  {job.price}
+                <Ionicons name="pricetag" size={18} color="#3ED598" />
+                <Text style={[styles.infoText, { color: "#3ED598" }]}>
+                  {job.salary}Frs
                 </Text>
               </View>
               <View style={styles.infoItem}>
                 <Ionicons name="time" size={18} color="#40189D" />
                 <Text style={[styles.infoText, { color: "#40189D" }]}>
-                  {job.days}
+                  {job.duration}
                 </Text>
               </View>
             </View>
@@ -188,6 +307,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 20,
   },
+
   helloText: {
     fontSize: 18,
     color: "#000000ff",
@@ -228,29 +348,23 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 20,
     marginBottom: 9,
+    zIndex: 5000,
   },
-  filterBtn: {
+  dropdown: {
     backgroundColor: "#fff",
     borderRadius: 12,
+    borderWidth: 0,
+    minHeight: 40,
+    minWidth: 80,
     paddingHorizontal: 10,
-    paddingVertical: 6,
-    marginHorizontal: 2,
-    flexDirection: "column",
-    alignItems: "flex-start",
-    minWidth: 90,
+    marginBottom: 2,
   },
-
-  filterText: {
-    fontSize: 10,
-    color: "#000000ff",
+  dropdownContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    borderWidth: 0,
+    elevation: 3,
   },
-
-  filterValue: {
-    fontSize: 13,
-    color: "#40189D",
-    fontWeight: "bold",
-  },
-
   jobCard: {
     backgroundColor: "#fff",
     borderRadius: 16,
@@ -285,7 +399,7 @@ const styles = StyleSheet.create({
   },
 
   jobUser: {
-    fontSize: 12,
+    fontSize: 18,
     color: "#000000ff",
     fontWeight: "bold",
   },
@@ -309,9 +423,15 @@ const styles = StyleSheet.create({
   },
 
   jobTitle: {
-    fontSize: 18,
+    fontSize: 30,
     fontWeight: "bold",
     color: "#000000ff",
+    marginBottom: 10,
+  },
+
+  description: {
+    fontSize: 20,
+    color: "#00000099",
     marginBottom: 10,
   },
 
@@ -329,7 +449,7 @@ const styles = StyleSheet.create({
 
   infoText: {
     marginLeft: 4,
-    fontSize: 14,
+    fontSize: 20,
     fontWeight: "bold",
   },
 

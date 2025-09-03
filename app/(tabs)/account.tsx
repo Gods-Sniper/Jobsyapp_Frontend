@@ -59,7 +59,7 @@ export default function AccountScreen() {
         </View>
         <TouchableOpacity
           onPress={async () => {
-            await deleteItemAsync("userData");
+            await deleteItemAsync("user");
             router.dismissTo("/(auth)/login");
           }}
           style={{ marginBottom: 18 }}

@@ -1,6 +1,7 @@
 import { useRouter } from "expo-router";
 import { setItem } from "expo-secure-store";
 import React, { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   Alert,
   Image,
@@ -53,7 +54,6 @@ const Login = () => {
       .then(async (data) => {
         console.log("response data:", data);
 
-        await setItem("userData", JSON.stringify(data.user)); //store user data
         const { status, message } = data;
 
         if (status === "error") {
@@ -63,9 +63,12 @@ const Login = () => {
             Alert.alert("Great !!: ", message);
             setEmail("");
             setPassword("");
-            setTimeout(() => {
-              router.push("/(tabs)");
-            }, 1000);
+            await AsyncStorage.setItem("token", data.token);
+
+            if (data.user) {
+              await AsyncStorage.setItem("user", JSON.stringify(data.user));
+            }
+            setTimeout(() => router.push("/(tabs)"), 1000);
           }
         }
       });
@@ -145,7 +148,7 @@ const Login = () => {
           </View>
           <TouchableOpacity
             style={styles.createAccountButton}
-            onPress={() => router.push("/signin")}
+            onPress={() => router.push("/welcomepage")}
           >
             <Text style={styles.createAccountText}>CREATE ACCOUNT</Text>
           </TouchableOpacity>

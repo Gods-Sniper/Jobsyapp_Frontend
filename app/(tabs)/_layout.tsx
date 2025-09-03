@@ -6,7 +6,7 @@ import { HapticTab } from "@/components/HapticTab";
 import { IconSymbol } from "@/components/ui/IconSymbol";
 import TabBarBackground from "@/components/ui/TabBarBackground";
 import { useColorScheme } from "@/hooks/useColorScheme";
-import { getItemAsync } from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -16,13 +16,24 @@ export default function TabLayout() {
 
   React.useEffect(() => {
     const checkUserExist = async () => {
-      const userExist = await getItemAsync("hasOnboarded");
-      const parseUserExist = JSON.parse(userExist || "");
-      console.log("userExist", parseUserExist);
-      if (!!parseUserExist) {
-        setShouldRedirect(true);
+      try {
+        const userExist = await AsyncStorage.getItem("user");
+
+        // Handle cases where userExist is null, undefined, or empty string
+        if (!userExist) {
+          setShouldRedirect(false);
+        } else {
+          // Only parse if it's a valid JSON string
+          const parseUserExist = JSON.parse(userExist);
+          console.log("userExist", parseUserExist);
+          setShouldRedirect(!!parseUserExist);
+        }
+      } catch (error) {
+        console.error("Error checking user existence:", error);
+        setShouldRedirect(false);
+      } finally {
+        setIsLoading(false);
       }
-      setIsLoading(false);
     };
     checkUserExist();
   }, []);
@@ -65,6 +76,15 @@ export default function TabLayout() {
         name="my-jobs"
         options={{
           title: "My Jobs",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="bag.fill" color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="notification"
+        options={{
+          title: "Notification",
           tabBarIcon: ({ color }) => (
             <IconSymbol size={28} name="bag.fill" color={color} />
           ),
