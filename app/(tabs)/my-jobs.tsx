@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
-  Image,
   TouchableOpacity,
   StyleSheet,
   FlatList,
@@ -13,12 +12,13 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 export default function MyJobsScreen() {
   const [menuVisible, setMenuVisible] = React.useState(false);
   const [jobs, setJobs] = useState([]);
   const [loading, setLoading] = useState(true);
- 
+  const [role, setRole] = useState<string>("");
 
   useEffect(() => {
     const fetchMyJobs = async () => {
@@ -27,25 +27,33 @@ export default function MyJobsScreen() {
         const token = await AsyncStorage.getItem("token");
         const userData = await AsyncStorage.getItem("user");
         let userId = "";
+        let userRole = "";
         if (userData) {
           const userObj = JSON.parse(userData);
-          userId = userObj._id || userObj.id; 
+          userId = userObj._id || userObj.id;
+          userRole = userObj.role || "";
+          setRole(userRole);
         }
 
-        const response = await fetch(
-          `http://192.168.100.150:4000/api/jobs/provider?userId=${userId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const data = await response.json();
-        const sortedJobs = (data.jobs || data).sort(
-          (a: { createdAt: string | number | Date; }, b: { createdAt: string | number | Date; }) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-        setJobs(sortedJobs);
+        if (userRole === "jobprovider") {
+          const response = await fetch(
+            `http://192.168.100.150:4000/api/jobs/provider?userId=${userId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            }
+          );
+          const data = await response.json();
+          const sortedJobs = (data.jobs || data).sort(
+            (
+              a: { createdAt: string | number | Date },
+              b: { createdAt: string | number | Date }
+            ) =>
+              new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          );
+          setJobs(sortedJobs);
+        }
       } catch (error) {
         console.error("Failed to fetch my jobs:", error);
       } finally {
@@ -57,13 +65,11 @@ export default function MyJobsScreen() {
 
   const renderItem = ({ item }) => (
     <View style={styles.applicantRow}>
-      {/* <Image
-        source={require("../../assets/images/Group 8.png")}
-        style={styles.avatar}
-      /> */}
       <View style={{ flex: 1, marginLeft: 12 }}>
         <Text style={styles.name}>{item.title}</Text>
-        <Text style={styles.message} numberOfLines={2} ellipsizeMode="tail">{item.description}</Text>
+        <Text style={styles.message} numberOfLines={2} ellipsizeMode="tail">
+          {item.description}
+        </Text>
         <Text style={styles.timeText}>
           {new Date(item.createdAt).toLocaleString()}
         </Text>
@@ -86,6 +92,39 @@ export default function MyJobsScreen() {
       </View>
     </View>
   );
+
+  if (role !== "jobprovider") {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <MaterialCommunityIcons
+            name="account-cancel"
+            size={200}
+            color="#40189D"
+            style={{ marginBottom: 10 }}
+          />
+          <Text style={{ fontSize: 20, color: "#40189D", textAlign: "center" }}>
+            Sorry !!!
+          </Text>
+          <Text style={{ fontSize: 20, color: "#40189D", textAlign: "center" }}>
+            Only job providers can view this page.
+          </Text>
+          <Text
+            style={{
+              fontSize: 14,
+              color: "#888",
+              textAlign: "center",
+              marginTop: 8,
+            }}
+          >
+            Please contact admin if you need provider access.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>

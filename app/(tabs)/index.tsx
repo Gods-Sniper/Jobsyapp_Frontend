@@ -72,7 +72,6 @@ export const Home = () => {
     });
   }, []);
 
-  // Fetch jobs function
   const fetchJobs = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -81,10 +80,14 @@ export const Home = () => {
           Authorization: `Bearer ${token}`,
         },
       });
-      const data = await response.json();
 
-     
-      const mappedJobs = data
+      const data = await response.json();
+      // console.log(data, "<<< JOBS DATA");
+
+      const jobsArray = Array.isArray(data)
+        ? data
+        : data.jobs || data.data || [];
+      const mappedJobs = jobsArray
         .map((job: any) => ({
           id: job._id || job.id,
           user:
@@ -101,8 +104,10 @@ export const Home = () => {
           days: job.days,
         }))
         .sort(
-          (a: { createdAt: string | number | Date; }, b: { createdAt: string | number | Date; }) =>
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          (
+            a: { createdAt: string | number | Date },
+            b: { createdAt: string | number | Date }
+          ) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
       setJobs(mappedJobs);
     } catch (error) {
@@ -110,19 +115,16 @@ export const Home = () => {
     }
   };
 
- 
   useEffect(() => {
     fetchJobs();
   }, []);
 
- 
   useFocusEffect(
     React.useCallback(() => {
       fetchJobs();
     }, [])
   );
 
- 
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchJobs();
@@ -263,7 +265,11 @@ export const Home = () => {
               </View>
             </View>
             <Text style={styles.jobTitle}>{job.title}</Text>
-            <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
+            <Text
+              style={styles.description}
+              numberOfLines={2}
+              ellipsizeMode="tail"
+            >
               {job.description}
             </Text>
             <View style={styles.jobInfoRow}>

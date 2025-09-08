@@ -159,7 +159,7 @@ export default function CreateJob() {
         description
       };
 
-      const response = await fetch("http://192.168.100.150:4000/api/jobs", {
+      const response = await fetch("http://192.168.100.150:4000/api/jobs/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
