@@ -69,6 +69,7 @@ export default function JobDetail() {
         alert("Job deleted successfully!");
         router.push("/my-jobs");
       } else {
+        console.log(data, "<<< DELETE RESPONSE");
         alert(data.message || "Failed to delete job.");
       }
     } catch (error) {
@@ -97,7 +98,7 @@ export default function JobDetail() {
     try {
       const token = await AsyncStorage.getItem("token");
       const response = await fetch(
-        `http://192.168.100.150:4000/api/jobs/${jobId}/apply`,
+        `http://192.168.100.150:4000/api/applications/${jobId}`,
         {
           method: "POST",
           headers: {
@@ -113,7 +114,6 @@ export default function JobDetail() {
         router.push("/my-applications");
       } else {
         alert(data.message || "Failed to apply for job.");
-
       }
     } catch (error) {
       alert("Error applying for job.");
@@ -161,7 +161,7 @@ export default function JobDetail() {
   return (
     <View style={styles.container}>
       <View style={styles.topBar}>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push("/(tabs)/account")}>
           <View style={styles.avatarCircle}>
             <Text style={styles.avatarText}>{avatarLetter}</Text>
           </View>
@@ -306,9 +306,11 @@ export default function JobDetail() {
       </ScrollView>
 
       <View style={styles.applyBtnContainer}>
-        <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
-          <Text style={styles.applyBtnText}>Apply Now</Text>
-        </TouchableOpacity>
+        {role === "jobseeker" && (
+          <TouchableOpacity style={styles.applyBtn} onPress={handleApply}>
+            <Text style={styles.applyBtnText}>Apply Now</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );

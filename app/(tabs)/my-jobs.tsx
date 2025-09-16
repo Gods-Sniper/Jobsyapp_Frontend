@@ -8,15 +8,24 @@ import {
   SafeAreaView,
   Modal,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+type Job = {
+  _id?: string;
+  id?: string;
+  title: string;
+  description: string;
+  createdAt: string;
+};
+
 export default function MyJobsScreen() {
   const [menuVisible, setMenuVisible] = React.useState(false);
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState<Job[]>([]);
   const [loading, setLoading] = useState(true);
   const [role, setRole] = useState<string>("");
 
@@ -63,7 +72,7 @@ export default function MyJobsScreen() {
     fetchMyJobs();
   }, []);
 
-  const renderItem = ({ item }) => (
+  const renderItem = ({ item }: { item: Job }) => (
     <View style={styles.applicantRow}>
       <View style={{ flex: 1, marginLeft: 12 }}>
         <Text style={styles.name}>{item.title}</Text>
@@ -85,13 +94,52 @@ export default function MyJobsScreen() {
           >
             <Text style={styles.acceptText}>View</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.declineBtn}>
+          <TouchableOpacity
+            style={styles.declineBtn}
+            onPress={() => handleDeleteJob}
+          >
             <Text style={styles.declineText}>Delete</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
+
+  const handleDeleteJob = async (jobId?: string) => {
+    Alert.alert("Delete Job", "Are you sure you want to delete this job?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Delete",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const token = await AsyncStorage.getItem("token");
+            const response = await fetch(
+              `http://192.168.100.150:4000/api/jobs/${jobId}`,
+              {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+              }
+            );
+            if (response.ok) {
+              setJobs((prev) =>
+                prev.filter((job) => (job._id || job.id) !== jobId)
+              );
+              alert("Job deleted successfully!");
+            } else {
+              alert("Failed to delete job.");
+            }
+          } catch (error) {
+            alert("Error deleting job.");
+            console.error("Delete job error:", error);
+          }
+        },
+      },
+    ]);
+  };
 
   if (role !== "jobprovider") {
     return (
@@ -142,16 +190,31 @@ export default function MyJobsScreen() {
         >
           <View style={styles.menuContainer}>
             <View style={styles.menu}>
-              <TouchableOpacity onPress={() => router.push("/createjob")}>
+              <TouchableOpacity
+                onPress={() => {
+                  setMenuVisible(false);
+                  router.push("/createjob");
+                }}
+              >
                 <Text style={styles.menuItem}> Create Job</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => router.push("/viewapplicants")}>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push("/viewapplicants");
+                  setMenuVisible(false);
+                }}
+              >
                 <Text style={styles.menuItem}> View Applicants</Text>
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => handleDeleteJob}>
                 <Text style={styles.menuItem}> Delete Job</Text>
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {
+                  router.push("/updatejob");
+                  setMenuVisible(false);
+                }}
+              >
                 <Text style={styles.menuItem}> Update Job</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => setMenuVisible(false)}>
@@ -172,7 +235,9 @@ export default function MyJobsScreen() {
         <FlatList
           data={jobs}
           renderItem={renderItem}
-          keyExtractor={(item) => item._id || item.id}
+          keyExtractor={(item, index) =>
+            item._id || item.id || index.toString()
+          }
           contentContainerStyle={{ paddingBottom: 100 }}
           showsVerticalScrollIndicator={false}
         />

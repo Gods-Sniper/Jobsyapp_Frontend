@@ -13,6 +13,9 @@ import {
 import DropDownPicker from "react-native-dropdown-picker";
 import ToastManager, { Toast } from "toastify-react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { router } from "expo-router";
+
+const GEOAPIFY_API_KEY = "991b0b949d514763b96ac54e491fa8fb"; // Replace with your key
 
 export default function CreateJob() {
   const [loggedUser, setLoggedUser] = useState<any>(null);
@@ -24,7 +27,7 @@ export default function CreateJob() {
   const [durationOpen, setDurationOpen] = useState(false);
   const [duration, setDuration] = useState("1 Hour");
   const [durationItems, setDurationItems] = useState([
-    { label: "1 Hour", value: "1 Hour" },
+    { label: "1 Hours", value: "1 Hours" },
     { label: "2 Hours", value: "2 Hours" },
     { label: "4 Hours", value: "4 Hours" },
     { label: "1 day", value: "1 day" },
@@ -35,15 +38,16 @@ export default function CreateJob() {
   ]);
 
   const [title, setTitle] = useState("Building");
-  const [location, setLocation] = useState("Yaounde, Cameroon");
   const [salary, setSalary] = useState("5000");
-  const [description, setDescription] = useState("Here i am providing my services ...");
+  const [description, setDescription] = useState(
+    "Here i am providing my services ..."
+  );
   const [jobTypeOpen, setJobTypeOpen] = useState(false);
   const [jobType, setJobType] = useState("Part-time");
   const [jobTypeItems, setJobTypeItems] = useState([
     { label: "Full-time", value: "Full-time" },
     { label: "Part-time", value: "Part-time" },
-    { label: "Freelance", value: "Freelance" },
+
     { label: "Instant", value: "Instant" },
   ]);
 
@@ -58,6 +62,10 @@ export default function CreateJob() {
   };
   const [errors, setErrors] = useState<Errors>({});
   const [error, setError] = useState("");
+
+  const [locationQuery, setLocationQuery] = useState("");
+  const [locationSuggestions, setLocationSuggestions] = useState<any[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Load logged user
   useEffect(() => {
@@ -99,6 +107,28 @@ export default function CreateJob() {
     fetchCategories();
   }, []);
 
+  // Fetch suggestions from Geoapify
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (locationQuery.length < 3) {
+        setLocationSuggestions([]);
+        return;
+      }
+      try {
+        const response = await fetch(
+          `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(
+            locationQuery
+          )}&limit=5&apiKey=${GEOAPIFY_API_KEY}`
+        );
+        const data = await response.json();
+        setLocationSuggestions(data.features || []);
+      } catch (err) {
+        setLocationSuggestions([]);
+      }
+    };
+    fetchSuggestions();
+  }, [locationQuery]);
+
   // Dropdown handlers
   const onCategoryOpen = () => {
     setDurationOpen(false);
@@ -121,7 +151,6 @@ export default function CreateJob() {
     const newErrors: Errors = {};
     if (!title.trim()) newErrors.title = "Title is required";
     if (!category.trim()) newErrors.category = "Category is required";
-    if (!location.trim()) newErrors.location = "Location is required";
     if (!salary.trim()) newErrors.salary = "Salary is required";
     if (!duration.trim()) newErrors.duration = "Duration is required";
     if (!jobType.trim()) newErrors.jobType = "Job type is required";
@@ -152,11 +181,11 @@ export default function CreateJob() {
       const body = {
         title,
         category: selectedCategoryId,
-        location,
+        location: locationQuery,
         salary,
         duration,
         jobType,
-        description
+        description,
       };
 
       const response = await fetch("http://192.168.100.150:4000/api/jobs/", {
@@ -170,18 +199,22 @@ export default function CreateJob() {
 
       const res = await response.json();
       if (res.status === "success") {
+        // console.log("Job created:", res.data);
         Toast.success("Job created successfully!");
-        // Reset form
+
         setTitle("");
-        setLocation("");
+        setLocationQuery("");
         setCategory("");
         setSalary("");
         setDuration("");
         setJobType("");
         setDescription("");
         setErrors({});
+
+        router.push("/(tabs)/my-jobs");
       } else {
         Toast.error(res.message || "Failed to create job. Please try again.");
+        console.log("Job created:", res.data);
       }
     } catch (err: any) {
       Toast.error(err.message || "An error occurred. Please try again.");
@@ -229,14 +262,52 @@ export default function CreateJob() {
             <Text style={styles.error}>{errors.category}</Text>
           )}
 
-          <TextInput
-            style={styles.input}
-            placeholder="Location"
-            value={location}
-            onChangeText={setLocation}
-            placeholderTextColor="#000000ff"
-            onFocus={() => clearError("location")}
-          />
+          <View style={{ marginHorizontal: 20, marginBottom: 8 }}>
+            <TextInput
+              style={styles.input}
+              placeholder="Location"
+              value={locationQuery}
+              onChangeText={(text) => {
+                setLocationQuery(text);
+                setShowSuggestions(true);
+                clearError("location");
+              }}
+              placeholderTextColor="#000000ff"
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            />
+            {showSuggestions && locationSuggestions.length > 0 && (
+              <View
+                style={{
+                  backgroundColor: "#fff",
+                  borderRadius: 12,
+                  elevation: 3,
+                  marginTop: 2,
+                  maxHeight: 200,
+                  zIndex: 9999,
+                }}
+              >
+                {locationSuggestions.map((item) => (
+                  <TouchableOpacity
+                    key={item.properties.place_id}
+                    onPress={() => {
+                      setLocationQuery(item.properties.formatted);
+                      setShowSuggestions(false);
+                    }}
+                    style={{
+                      padding: 12,
+                      borderBottomWidth: 1,
+                      borderBottomColor: "#eee",
+                    }}
+                  >
+                    <Text style={{ color: "#181818" }}>
+                      {item.properties.formatted}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+          </View>
           {errors.location && (
             <Text style={styles.error}>{errors.location}</Text>
           )}

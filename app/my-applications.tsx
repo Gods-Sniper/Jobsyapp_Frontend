@@ -31,7 +31,8 @@ export default function MyApplicationsScreen() {
           }
         );
         const data = await response.json();
-        setApplications(data.applications || data);
+        console.log(data.data, "fetched applications");
+        setApplications(data.data || data);
       } catch (error) {
         console.error("Failed to fetch applications:", error);
       } finally {

@@ -31,7 +31,6 @@ export const Home = () => {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Dropdown states (unchanged)
   const [typeOpen, setTypeOpen] = useState(false);
   const [typeValue, setTypeValue] = useState(null);
   const [typeItems, setTypeItems] = useState([
@@ -260,7 +259,7 @@ export const Home = () => {
                 style={[styles.statusBadge, { backgroundColor: "#E6F0FF" }]}
               >
                 <Text style={[styles.statusText, { color: "#6C8EFF" }]}>
-                  {job.status || "Pending"}
+                  {job.status || "OOO"}
                 </Text>
               </View>
             </View>
@@ -276,7 +275,7 @@ export const Home = () => {
               <View style={styles.infoItem}>
                 <Ionicons name="pricetag" size={18} color="#3ED598" />
                 <Text style={[styles.infoText, { color: "#3ED598" }]}>
-                  {job.salary}Frs
+                  {job.salary}
                 </Text>
               </View>
               <View style={styles.infoItem}>

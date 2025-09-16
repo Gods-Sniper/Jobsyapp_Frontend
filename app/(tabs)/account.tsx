@@ -3,17 +3,45 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { deleteItemAsync } from "expo-secure-store";
 import {
-  Image,
   SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Linking from "expo-linking";
 
 export default function AccountScreen() {
   const router = useRouter();
-  const [user, setUser] = useState("");
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const userData = await AsyncStorage.getItem("user");
+      if (userData) {
+        setUser(JSON.parse(userData));
+      }
+    };
+    fetchUser();
+  }, []);
+
+  const handleOpenCV = async () => {
+    try {
+      const response = await fetch(
+        `https://192.168.100.150:4000/api/users/${user?.id}/cv`
+      );
+      if (!response.ok) throw new Error("CV not found");
+      const data = await response.json();
+      if (data?.cvUrl) {
+        Linking.openURL(data.cvUrl);
+      } else {
+        alert("No CV uploaded.");
+      }
+    } catch (error) {
+      alert("Failed to fetch CV.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -23,17 +51,25 @@ export default function AccountScreen() {
         </View>
         <View style={styles.avatarWrapper}>
           <View style={styles.logoCircle}>
-            <Text style={styles.logoText}>{user?.[0]?.toUpperCase()}</Text>
+            <Text style={styles.logoText}>
+              {user?.username?.[0]?.toUpperCase() ||
+                user?.name?.[0]?.toUpperCase() ||
+                "U"}
+            </Text>
           </View>
         </View>
       </View>
       <View style={styles.content}>
-        <Text style={styles.name}>{user}</Text>
-        <Text style={styles.role}>Programmer</Text>
-        <Text style={styles.bio}>
-          Duis aute irure dolor in reprehenderit in voluptate velit esse cillum
-          dolore eu
+        <Text style={styles.name}>
+          {user?.username || user?.name || "Unknown User"}
         </Text>
+        <Text style={styles.role}>{user?.role || "No role"}</Text>
+        <Text style={styles.bio}>
+          {user?.bio ||
+            "No bio available. Update your profile to add more information."}
+        </Text>
+        <Text style={styles.infoText}>Email: {user?.email || "No email"}</Text>
+        <Text style={styles.infoText}>Phone: {user?.phone || "No phone"}</Text>
         <View style={styles.iconRow}>
           <TouchableOpacity style={styles.iconBtn}>
             <Ionicons name="call-outline" size={28} color="#40189D" />
@@ -45,44 +81,58 @@ export default function AccountScreen() {
             <Ionicons name="location-outline" size={28} color="#40189D" />
           </TouchableOpacity>
         </View>
-        <View style={styles.resumeCard}>
+        <TouchableOpacity style={styles.resumeCard} onPress={handleOpenCV}>
           <View>
-            <Text style={styles.resumeTitle}>My Resume</Text>
-            <Text style={styles.resumeFile}>david_resume.pdf</Text>
+            <Text style={styles.resumeTitle}>Resume</Text>
+            <Text style={styles.resumeFile}>
+              {user?.resumeFileName || "No resume uploaded"}
+            </Text>
           </View>
-          <Ionicons name="ellipsis-vertical" size={22} color="#fff" />
-        </View>
-        <TouchableOpacity
-          onPress={async () => {
-            await deleteItemAsync("user");
-            router.dismissTo("/(auth)/login");
-          }}
-          style={{ marginBottom: 18 }}
-        >
-          <Text>Logout</Text>
+          <Ionicons
+            name="document-text-outline"
+            size={32}
+            color="#fff"
+            style={{ marginLeft: 10 }}
+          />
         </TouchableOpacity>
+
         <View style={styles.statsRow}>
           <View style={styles.statCardPurple}>
-            <Text style={styles.statNumber}>29</Text>
-            <Text style={styles.statLabel}>Jobs Applied</Text>
+            <Text style={styles.statNumber}>{user?.jobsPosted || 0}</Text>
+            <Text style={styles.statLabel}>Jobs Posted</Text>
             <Ionicons
-              name="checkmark-circle-outline"
+              name="briefcase"
               size={60}
               color="#fff"
               style={styles.statBgIcon}
             />
           </View>
           <View style={styles.statCardBlue}>
-            <Text style={styles.statNumber}>3</Text>
-            <Text style={styles.statLabel}>Interviews</Text>
+            <Text style={styles.statNumber}>{user?.applications || 0}</Text>
+            <Text style={styles.statLabel}>Applications</Text>
             <Ionicons
-              name="help-circle-outline"
+              name="send"
               size={60}
               color="#fff"
               style={styles.statBgIcon}
             />
           </View>
         </View>
+        <TouchableOpacity
+          onPress={async () => {
+            await deleteItemAsync("user");
+            router.dismissTo("/(auth)/login");
+          }}
+          style={styles.logoutBtn}
+        >
+          <Ionicons
+            name="log-out-outline"
+            size={24}
+            color="#fff"
+            style={{ marginRight: 8 }}
+          />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -101,6 +151,23 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
     opacity: 0.7,
+  },
+  logoutBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#40189D",
+    borderRadius: 16,
+    paddingVertical: 14,
+    paddingHorizontal: 32,
+    marginTop: 18,
+    marginBottom: 18,
+    elevation: 2,
+  },
+  logoutText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 18,
   },
   headerRow: {
     flexDirection: "row",
@@ -134,7 +201,7 @@ const styles = StyleSheet.create({
   logoCircle: {
     width: 100,
     height: 100,
-    borderRadius: 18,
+    borderRadius: 50,
     backgroundColor: "#40189D",
     alignItems: "center",
     justifyContent: "center",
@@ -142,7 +209,7 @@ const styles = StyleSheet.create({
   logoText: {
     color: "#fff",
     fontWeight: "bold",
-    fontSize: 200,
+    fontSize: 80,
   },
   content: {
     alignItems: "center",
@@ -150,13 +217,13 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   name: {
-    fontSize: 22,
+    fontSize: 50,
     fontWeight: "bold",
     color: "#181818",
     marginTop: 8,
   },
   role: {
-    fontSize: 16,
+    fontSize: 25,
     color: "#BDBDBD",
     marginTop: 2,
     marginBottom: 8,
@@ -166,6 +233,12 @@ const styles = StyleSheet.create({
     color: "#6B6B6B",
     textAlign: "center",
     marginBottom: 18,
+  },
+  infoText: {
+    fontSize: 20,
+    color: "#181818",
+    marginBottom: 20,
+    textAlign: "center",
   },
   iconRow: {
     flexDirection: "row",
