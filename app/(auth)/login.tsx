@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
+import { API_BASE_URL } from "../config";
 
 const Login = () => {
   const router = useRouter();
@@ -42,7 +43,7 @@ const Login = () => {
       email: email,
       password: password,
     });
-    fetch("http://192.168.100.150:4000/api/users/signin", {
+    fetch(`${API_BASE_URL}/users/signin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

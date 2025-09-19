@@ -17,6 +17,7 @@ import {
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import { setItem } from "expo-secure-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_BASE_URL } from "../config";
 
 // Define the file type interface
 interface FileType {
@@ -82,7 +83,7 @@ const SignIn2 = () => {
 
   const pickFile = async (fileType: FileField) => {
     try {
-      // Show action sheet to choose between document picker and image picker
+     
       Alert.alert(
         "Select File Type",
         "Choose how you want to select your file",
@@ -265,7 +266,7 @@ const SignIn2 = () => {
 
     let body = formData;
     console.log("body", body);
-    fetch("http://192.168.100.150:4000/api/users/signup", {
+    fetch(`${API_BASE_URL}/users/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "multipart/form-data",

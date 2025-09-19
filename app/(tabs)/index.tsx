@@ -12,6 +12,7 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DropDownPicker from "react-native-dropdown-picker";
+import { API_BASE_URL } from "../config";
 
 type Job = {
   id: string;
@@ -22,6 +23,7 @@ type Job = {
   description: string;
   createdAt: string;
   salary: string;
+  jobstatus: string;
   days: string;
 };
 
@@ -74,7 +76,7 @@ export const Home = () => {
   const fetchJobs = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
-      const response = await fetch("http://192.168.100.150:4000/api/jobs/", {
+      const response = await fetch(`${API_BASE_URL}/jobs/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -97,6 +99,7 @@ export const Home = () => {
           description: job.description,
           duration: job.duration,
           status: job.status,
+          jobstatus: job.jobstatus,
           createdAt: job.createdAt,
           title: job.title,
           salary: job.salary,
@@ -123,6 +126,8 @@ export const Home = () => {
       fetchJobs();
     }, [])
   );
+
+  // console.log(jobs, "<<< JOBS");
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -259,7 +264,7 @@ export const Home = () => {
                 style={[styles.statusBadge, { backgroundColor: "#E6F0FF" }]}
               >
                 <Text style={[styles.statusText, { color: "#6C8EFF" }]}>
-                  {job.status || "OOO"}
+                  {job.jobstatus || "OOO"}
                 </Text>
               </View>
             </View>

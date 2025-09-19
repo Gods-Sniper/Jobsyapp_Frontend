@@ -14,6 +14,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { API_BASE_URL } from "../config";
 
 type Job = {
   _id?: string;
@@ -46,7 +47,7 @@ export default function MyJobsScreen() {
 
         if (userRole === "jobprovider") {
           const response = await fetch(
-            `http://192.168.100.150:4000/api/jobs/provider?userId=${userId}`,
+            `${API_BASE_URL}/jobs/provider?userId=${userId}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -94,12 +95,12 @@ export default function MyJobsScreen() {
           >
             <Text style={styles.acceptText}>View</Text>
           </TouchableOpacity>
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={styles.declineBtn}
             onPress={() => handleDeleteJob}
           >
             <Text style={styles.declineText}>Delete</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
       </View>
     </View>
@@ -115,7 +116,7 @@ export default function MyJobsScreen() {
           try {
             const token = await AsyncStorage.getItem("token");
             const response = await fetch(
-              `http://192.168.100.150:4000/api/jobs/${jobId}`,
+              `${API_BASE_URL}/jobs/${jobId}`,
               {
                 method: "DELETE",
                 headers: {

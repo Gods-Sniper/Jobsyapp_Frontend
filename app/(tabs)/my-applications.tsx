@@ -11,6 +11,7 @@ import {
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { API_BASE_URL } from "../config";
 
 export default function MyApplicationsScreen() {
   const [applications, setApplications] = useState([]);
@@ -23,7 +24,8 @@ export default function MyApplicationsScreen() {
       try {
         const token = await AsyncStorage.getItem("token");
         const response = await fetch(
-          "http://192.168.100.150:4000/api/applications/my",
+          `${API_BASE_URL}/applications/my`,
+
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -42,17 +44,18 @@ export default function MyApplicationsScreen() {
     fetchApplications();
   }, []);
 
-  const renderItem = ({ item }) => {
+  const renderItem = ({ item }: { item: any }) => {
     // Style application status
     let appStatusColor = "#3ED598";
     let appStatusText = item.status || "Pending";
     if (appStatusText.toLowerCase() === "accepted") appStatusColor = "#40189D";
     if (appStatusText.toLowerCase() === "rejected") appStatusColor = "#FF5A5A";
     if (appStatusText.toLowerCase() === "pending") appStatusColor = "#F9A826";
+    console.log(item.job, "<<< ITEM JOB");
 
     // Style job status
     let jobStatusColor = "#40189D";
-    let jobStatusText = item.job?.status || "Open";
+    let jobStatusText = item.job?.jobstatus || "Open";
     if (jobStatusText.toLowerCase() === "completed") jobStatusColor = "#3ED598";
     if (jobStatusText.toLowerCase() === "closed") jobStatusColor = "#FF5A5A";
 

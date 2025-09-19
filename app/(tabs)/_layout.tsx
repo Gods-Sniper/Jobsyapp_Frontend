@@ -1,5 +1,5 @@
 import { Redirect, Tabs } from "expo-router";
-import React from "react";
+import React, { useState } from "react";
 import { Platform } from "react-native";
 
 import { HapticTab } from "@/components/HapticTab";
@@ -13,6 +13,7 @@ export default function TabLayout() {
 
   const [shouldRedirect, setShouldRedirect] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(true);
+  const [user, setUser] = useState<any>(null);
 
   React.useEffect(() => {
     const checkUserExist = async () => {
@@ -25,6 +26,7 @@ export default function TabLayout() {
         } else {
           // Only parse if it's a valid JSON string
           const parseUserExist = JSON.parse(userExist);
+          setUser(parseUserExist);
           console.log("userExist", parseUserExist);
           setShouldRedirect(!!parseUserExist);
         }
@@ -46,6 +48,7 @@ export default function TabLayout() {
     return <Redirect href="/(auth)/login" />;
   }
 
+  // console.log("user: ", user?.role);
   return (
     <Tabs
       screenOptions={{
@@ -72,15 +75,28 @@ export default function TabLayout() {
         }}
       />
 
-      <Tabs.Screen
-        name="my-jobs"
-        options={{
-          title: "My Jobs",
-          tabBarIcon: ({ color }) => (
-            <IconSymbol size={28} name="bag.fill" color={color} />
-          ),
-        }}
-      />
+      <Tabs.Protected guard={user?.role === "jobprovider"}>
+        <Tabs.Screen
+          name="my-jobs"
+          options={{
+            title: "My Jobs",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="bag.fill" color={color} />
+            ),
+          }}
+        />
+      </Tabs.Protected>
+      <Tabs.Protected guard={user?.role === "jobseeker"}>
+        <Tabs.Screen
+          name="my-applications"
+          options={{
+            title: "My applications",
+            tabBarIcon: ({ color }) => (
+              <IconSymbol size={28} name="bag.fill" color={color} />
+            ),
+          }}
+        />
+      </Tabs.Protected>
       <Tabs.Screen
         name="notification"
         options={{

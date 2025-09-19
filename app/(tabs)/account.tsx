@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { deleteItemAsync } from "expo-secure-store";
+import { useFocusEffect } from "@react-navigation/native";
+
 import {
   SafeAreaView,
   StyleSheet,
@@ -11,26 +12,84 @@ import {
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Linking from "expo-linking";
+import { API_BASE_URL } from "../config";
 
 export default function AccountScreen() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
 
+  const fetchUser = async () => {
+    const userData = await AsyncStorage.getItem("user");
+    if (!userData) return;
+    const userObj = JSON.parse(userData);
+
+    // Fetch CV
+    let cvFileName = "";
+    let cvUrl = "";
+    try {
+      const cvRes = await fetch(`${API_BASE_URL}/users/${userObj._id}/cv`);
+      const cvData = await cvRes.json();
+      cvFileName = cvData?.cvFileName || "";
+      cvUrl = cvData?.cvUrl || "";
+    } catch {}
+
+    // Fetch stats
+    let jobsPosted = 0;
+    let jobsHired = 0;
+    let jobsRejected = 0;
+    let applications = 0;
+
+    if (userObj.role === "jobprovider") {
+      // Fetch jobs posted
+      const jobsRes = await fetch(`${API_BASE_URL}/jobs/user/${userObj._id}`);
+      const jobsData = await jobsRes.json();
+      jobsPosted = jobsData?.jobs?.length || 0;
+      applications = jobsData?.jobs?.reduce(
+        (acc: any, job: { applications: string | any[] }) =>
+          acc + (job.applications?.length || 0),
+        0
+      );
+    } else if (userObj.role === "jobseeker") {
+      // Fetch applications
+      const appsRes = await fetch(
+        `${API_BASE_URL}/applications/user/${userObj._id}`
+      );
+      const appsData = await appsRes.json();
+      jobsHired =
+        appsData?.applications?.filter(
+          (app: { status: string }) => app.status === "hired"
+        ).length || 0;
+      jobsRejected =
+        appsData?.applications?.filter(
+          (app: { status: string }) => app.status === "rejected"
+        ).length || 0;
+      applications = appsData?.applications?.length || 0;
+    }
+
+    setUser({
+      ...userObj,
+      cvFileName,
+      cvUrl,
+      jobsPosted,
+      jobsHired,
+      jobsRejected,
+      applications,
+    });
+  };
+
   useEffect(() => {
-    const fetchUser = async () => {
-      const userData = await AsyncStorage.getItem("user");
-      if (userData) {
-        setUser(JSON.parse(userData));
-      }
-    };
     fetchUser();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchUser();
+    }, [])
+  );
+
   const handleOpenCV = async () => {
     try {
-      const response = await fetch(
-        `https://192.168.100.150:4000/api/users/${user?.id}/cv`
-      );
+      const response = await fetch(`${API_BASE_URL}/users/${user?.id}/cv`);
       if (!response.ok) throw new Error("CV not found");
       const data = await response.json();
       if (data?.cvUrl) {
@@ -64,10 +123,10 @@ export default function AccountScreen() {
           {user?.username || user?.name || "Unknown User"}
         </Text>
         <Text style={styles.role}>{user?.role || "No role"}</Text>
-        <Text style={styles.bio}>
+        {/* <Text style={styles.bio}>
           {user?.bio ||
             "No bio available. Update your profile to add more information."}
-        </Text>
+        </Text> */}
         <Text style={styles.infoText}>Email: {user?.email || "No email"}</Text>
         <Text style={styles.infoText}>Phone: {user?.phone || "No phone"}</Text>
         <View style={styles.iconRow}>
@@ -81,11 +140,20 @@ export default function AccountScreen() {
             <Ionicons name="location-outline" size={28} color="#40189D" />
           </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.resumeCard} onPress={handleOpenCV}>
+        <TouchableOpacity
+          style={styles.resumeCard}
+          onPress={() => {
+            if (user?.cvUrl) {
+              Linking.openURL(user.cvUrl);
+            } else {
+              alert("No CV uploaded.");
+            }
+          }}
+        >
           <View>
             <Text style={styles.resumeTitle}>Resume</Text>
             <Text style={styles.resumeFile}>
-              {user?.resumeFileName || "No resume uploaded"}
+              {user?.cv || "No resume uploaded"}
             </Text>
           </View>
           <Ionicons
@@ -97,30 +165,58 @@ export default function AccountScreen() {
         </TouchableOpacity>
 
         <View style={styles.statsRow}>
-          <View style={styles.statCardPurple}>
-            <Text style={styles.statNumber}>{user?.jobsPosted || 0}</Text>
-            <Text style={styles.statLabel}>Jobs Posted</Text>
-            <Ionicons
-              name="briefcase"
-              size={60}
-              color="#fff"
-              style={styles.statBgIcon}
-            />
-          </View>
-          <View style={styles.statCardBlue}>
-            <Text style={styles.statNumber}>{user?.applications || 0}</Text>
-            <Text style={styles.statLabel}>Applications</Text>
-            <Ionicons
-              name="send"
-              size={60}
-              color="#fff"
-              style={styles.statBgIcon}
-            />
-          </View>
+          {user?.role === "jobprovider" ? (
+            <>
+              <View style={styles.statCardPurple}>
+                <Text style={styles.statNumber}>{user?.postedBy || "null"}</Text>
+                <Text style={styles.statLabel}>Jobs Posted</Text>
+                <Ionicons
+                  name="briefcase"
+                  size={60}
+                  color="#fff"
+                  style={styles.statBgIcon}
+                />
+              </View>
+              <View style={styles.statCardBlue}>
+                <Text style={styles.statNumber}>{user?.applications || "null"}</Text>
+                <Text style={styles.statLabel}>Applications</Text>
+                <Ionicons
+                  name="send"
+                  size={60}
+                  color="#fff"
+                  style={styles.statBgIcon}
+                />
+              </View>
+            </>
+          ) : (
+            <>
+              <View style={styles.statCardPurple}>
+                <Text style={styles.statNumber}>{user?.jobsHired || 0}</Text>
+                <Text style={styles.statLabel}>Jobs Hired</Text>
+                <Ionicons
+                  name="briefcase"
+                  size={60}
+                  color="#fff"
+                  style={styles.statBgIcon}
+                />
+              </View>
+              <View style={styles.statCardBlue}>
+                <Text style={styles.statNumber}>{user?.jobsRejected || 0}</Text>
+                <Text style={styles.statLabel}>Jobs Rejected</Text>
+                <Ionicons
+                  name="close-circle"
+                  size={60}
+                  color="#fff"
+                  style={styles.statBgIcon}
+                />
+              </View>
+            </>
+          )}
         </View>
         <TouchableOpacity
           onPress={async () => {
-            await deleteItemAsync("user");
+            await AsyncStorage.removeItem("user");
+            await AsyncStorage.removeItem("token");
             router.dismissTo("/(auth)/login");
           }}
           style={styles.logoutBtn}
@@ -341,3 +437,6 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
 });
+
+
+

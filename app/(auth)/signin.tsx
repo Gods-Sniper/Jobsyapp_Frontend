@@ -21,7 +21,7 @@ const SignIn = () => {
   const [error, setError] = useState("");
 
   const local = useLocalSearchParams();
-  console.log(local.role);
+  // console.log(local.role);
 
   const isValidEmail = (email: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
