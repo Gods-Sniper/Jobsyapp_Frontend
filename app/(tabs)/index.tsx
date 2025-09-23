@@ -9,10 +9,14 @@ import {
   View,
   StyleSheet,
   RefreshControl,
+  Alert,
 } from "react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DropDownPicker from "react-native-dropdown-picker";
 import { API_BASE_URL } from "../config";
+import * as Location from "expo-location";
+import * as Notifications from "expo-notifications";
+import { registerForPushNotificationsAsync } from "../notifications/registerPushToken";
 
 type Job = {
   id: string;
@@ -30,6 +34,7 @@ type Job = {
 export const Home = () => {
   const router = useRouter();
   const [user, setUser] = useState("");
+  const [userRole, setUserRole] = useState(""); // Add this line
   const [jobs, setJobs] = useState<Job[]>([]);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -59,6 +64,7 @@ export const Home = () => {
     { label: "Recent", value: "recent" },
     { label: "Old", value: "old" },
   ]);
+  const [locationText, setLocationText] = useState("");
 
   useEffect(() => {
     AsyncStorage.getItem("user").then((data) => {
@@ -66,11 +72,32 @@ export const Home = () => {
         try {
           const userObj = JSON.parse(data);
           setUser(userObj.username || userObj.name || "");
+          setUserRole(userObj.role || "");
         } catch (e) {
           setUser("");
+          setUserRole("");
         }
       }
     });
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== "granted") return;
+      let loc = await Location.getCurrentPositionAsync({});
+      // Reverse geocode to get city/address
+      let geo = await Location.reverseGeocodeAsync({
+        latitude: loc.coords.latitude,
+        longitude: loc.coords.longitude,
+      });
+      if (geo && geo.length > 0) {
+        const { city, region, street, name } = geo[0];
+        setLocationText(
+          [name, street, city, region].filter(Boolean).join(", ")
+        );
+      }
+    })();
   }, []);
 
   const fetchJobs = async () => {
@@ -135,6 +162,21 @@ export const Home = () => {
     setRefreshing(false);
   };
 
+  useEffect(() => {
+    registerForPushNotificationsAsync();
+
+    const subscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        // Show a pop-up or update your UI
+        return Alert.alert(
+          notification.request.content.title ?? "",
+          notification.request.content.body ?? ""
+        );
+      }
+    );
+    return () => subscription.remove();
+  }, []);
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -142,8 +184,18 @@ export const Home = () => {
           <Text style={styles.helloText}>
             Yo, <Text style={styles.helloName}> {user}</Text>
           </Text>
-          <Text style={styles.helloSub}>Paul Messi, Yaoundé</Text>
+          <Text style={styles.helloSub}>
+            {locationText || "Paul Messi, Yaoundé"}
+          </Text>
         </View>
+        {userRole === "jobprovider" && (
+          <TouchableOpacity
+            style={styles.fab}
+            onPress={() => router.push("/createjob")}
+          >
+            <Ionicons name="add" size={28} color="#fff" />
+          </TouchableOpacity>
+        )}
         <TouchableOpacity onPress={() => router.push("/account")}>
           <View style={styles.headerRight}>
             <View style={styles.logoCircle}>
@@ -489,5 +541,17 @@ const styles = StyleSheet.create({
     color: "#40189D",
     marginTop: 2,
     fontWeight: "bold",
+  },
+
+  fab: {
+    right: 30,
+    width: 35,
+    height: 35,
+    borderRadius: 30,
+    backgroundColor: "#40189D",
+    alignItems: "center",
+    justifyContent: "center",
+    elevation: 3,
+    marginLeft: 60,
   },
 });

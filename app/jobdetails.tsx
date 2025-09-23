@@ -8,6 +8,7 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter, useLocalSearchParams } from "expo-router";
@@ -79,6 +80,16 @@ export default function JobDetail() {
     router.push({ pathname: "/updatejob", params: { jobId } });
   };
 
+  const handlepayment = () => {
+    setMenuVisible(false);
+    router.push({ pathname: "./paymentpage", params: { jobId } });
+  };
+
+  const handlemap = () => {
+    setMenuVisible(false);
+    router.push({ pathname: "./mapscreen" });
+  };
+
   const handleViewApplicants = () => {
     setMenuVisible(false);
     router.push({ pathname: "/viewapplicants", params: { jobId } });
@@ -131,7 +142,7 @@ export default function JobDetail() {
       console.log("Success:", data);
       setJob({ ...job, jobstatus: "completed" });
       Alert.alert("Success", "Job marked as Done!", [
-        { text: "OK", onPress: () => router.push(`./payment?jobId=${jobId}`) },
+        { text: "OK", onPress: () => router.push(`./paymentpage?jobId=${jobId}`) },
       ]);
     } catch (error) {
       console.error("Mark as done error:", error);
@@ -198,31 +209,41 @@ export default function JobDetail() {
           animationType="slide"
           onRequestClose={() => setMenuVisible(false)}
         >
-          <View style={styles.menuContainer}>
-            <View style={styles.menu}>
-              <TouchableOpacity
-                onPress={() => {
-                  setMenuVisible(false);
-                  router.push("/createjob");
-                }}
-              >
-                <Text style={styles.menuItem}>Create Job</Text>
-              </TouchableOpacity>
-              {isCreator && (
-                <>
-                  <TouchableOpacity onPress={handleViewApplicants}>
-                    <Text style={styles.menuItem}>View Applicants</Text>
+          <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
+            <View style={styles.menuContainer}>
+              <TouchableWithoutFeedback>
+                <View style={styles.menu}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      setMenuVisible(false);
+                      router.push("/createjob");
+                    }}
+                  >
+                    <Text style={styles.menuItem}>Create Job</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity onPress={handleDeleteJob}>
-                    <Text style={styles.menuItem}>Delete Job</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity onPress={handleUpdateJob}>
-                    <Text style={styles.menuItem}>Update Job</Text>
-                  </TouchableOpacity>
-                </>
-              )}
+                  {isCreator && (
+                    <>
+                      <TouchableOpacity onPress={handleViewApplicants}>
+                        <Text style={styles.menuItem}>View Applicants</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handleDeleteJob}>
+                        <Text style={styles.menuItem}>Delete Job</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handleUpdateJob}>
+                        <Text style={styles.menuItem}>Update Job</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handlepayment}>
+                        <Text style={styles.menuItem}>Payment</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={handlemap}>
+                        <Text style={styles.menuItem}>View Map</Text>
+                      </TouchableOpacity>
+                    </>
+                  )}
+                </View>
+              </TouchableWithoutFeedback>
             </View>
-          </View>
+          </TouchableWithoutFeedback>
         </Modal>
       </View>
 
@@ -267,6 +288,23 @@ export default function JobDetail() {
             style={styles.infoIcon}
           />
           <Text style={styles.infoBold}>{job.address || "No Location"}</Text>
+          {job.address && (
+            <TouchableOpacity
+              style={styles.mapBtn}
+              onPress={() =>
+                router.push({
+                  pathname: "./mapscreen",
+                  params: {
+                    address: job.address,
+                    latitude: job.location?.coordinates?.[1],
+                    longitude: job.location?.coordinates?.[0],
+                  },
+                })
+              }
+            >
+              <Ionicons name="map" size={12} color="#fff" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.infoRow}>
@@ -439,5 +477,17 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingVertical: 14,
   },
-  applyBtnText: { color: "#fff", fontWeight: "bold", fontSize: 20 },
+  applyBtnText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 20,
+  },
+  mapBtn: {
+    marginLeft: 10,
+    backgroundColor: "#40189D",
+    borderRadius: 50,
+    padding: 8,
+    alignItems: "center",
+    justifyContent: "center",
+  },
 });

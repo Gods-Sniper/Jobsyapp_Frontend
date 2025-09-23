@@ -53,9 +53,14 @@ export default function CreateJob() {
   const [description, setDescription] = useState(
     "We are looking for a grapgic designer to build design website using for a small e-commerce shop"
   );
-  const [address, setAddress] = useState("Douala, Cameroon");
+  const [address, setAddress] = useState("");
 
   const [errors, setErrors] = useState<any>({});
+
+  // Location state
+  const [locationQuery, setLocationQuery] = useState("");
+  const [locationSuggestions, setLocationSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   // Load logged user
   useEffect(() => {
@@ -87,6 +92,30 @@ export default function CreateJob() {
     fetchCategories();
   }, []);
 
+  // Fetch location suggestions
+  const OPENCAGE_API_KEY = "6164b77487fe4cb0bf7eb4345e3b7ba0";
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (!locationQuery.trim()) {
+        setLocationSuggestions([]);
+        return;
+      }
+      try {
+        const res = await fetch(
+          `https://api.opencagedata.com/geocode/v1/json?q=${encodeURIComponent(
+            locationQuery
+          )}&key=${OPENCAGE_API_KEY}&limit=5`
+        );
+        const data = await res.json();
+        const suggestions = data.results.map((item: any) => item.formatted);
+        setLocationSuggestions(suggestions);
+      } catch {
+        setLocationSuggestions([]);
+      }
+    };
+    fetchSuggestions();
+  }, [locationQuery]);
+
   // Dropdown handlers
   const onCategoryOpen = () => {
     setDurationOpen(false);
@@ -113,7 +142,7 @@ export default function CreateJob() {
     if (!duration.trim()) newErrors.duration = "Duration is required";
     if (!jobType.trim()) newErrors.jobType = "Job type is required";
     if (!description.trim()) newErrors.description = "Description is required";
-    if (!address.trim()) newErrors.address = "Location is required";
+    if (!address.trim()) newErrors.address = "Address is required";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -136,7 +165,7 @@ export default function CreateJob() {
       duration,
       jobType,
       description,
-      address,
+      address: address || locationQuery,
     };
 
     try {
@@ -211,19 +240,39 @@ export default function CreateJob() {
           </View>
 
           {/* Location input */}
-          <TextInput
-            style={styles.input}
-            placeholder="Location"
-            value={address}
-            onChangeText={(text) => {
-              setAddress(text);
-              clearError("location");
-            }}
-            onFocus={() => clearError("location")}
-          />
-          {errors.location && (
-            <Text style={styles.error}>{errors.location}</Text>
-          )}
+          <View style={{ marginHorizontal: 20, marginBottom: 12 }}>
+            <TextInput
+              style={styles.input}
+              placeholder="address"
+              value={locationQuery}
+              onChangeText={(text) => {
+                setLocationQuery(text);
+                setShowSuggestions(true);
+                clearError("address");
+              }}
+              
+            />
+            {showSuggestions && locationSuggestions.length > 0 && (
+              <View style={styles.suggestionBox}>
+                {locationSuggestions.map((suggestion, idx) => (
+                  <TouchableOpacity
+                    key={idx}
+                    onPress={() => {
+                      setLocationQuery(suggestion);
+                      setAddress(suggestion);
+                      setShowSuggestions(false);
+                    }}
+                    style={styles.suggestionItem}
+                  >
+                    <Text>{suggestion}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            )}
+            {errors.address && (
+              <Text style={styles.error}>{errors.address}</Text>
+            )}
+          </View>
 
           {/* Salary */}
           <TextInput
@@ -356,4 +405,20 @@ const styles = StyleSheet.create({
   },
   createBtnText: { color: "#fff", fontWeight: "bold", fontSize: 20 },
   error: { color: "red", fontSize: 14, marginLeft: 20, marginBottom: 8 },
+  suggestionBox: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#E6E6FA",
+    marginTop: -8,
+    marginBottom: 8,
+    maxHeight: 150,
+    overflow: "scroll",
+    zIndex: 999,
+  },
+  suggestionItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
 });

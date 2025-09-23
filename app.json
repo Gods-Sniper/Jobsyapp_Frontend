@@ -2,6 +2,11 @@
   "expo": {
     "name": "Jobsy",
     "slug": "Jobsy",
+    "extra": {
+      "eas": {
+        "projectId": "b1d3f0a3-2f3e-4d2e-8f3e-5f3e2d3c4b5a"
+      }
+    },
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/logo3.png",
@@ -9,7 +14,10 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "config": {
+        "googleMapsApiKey": "AIzaSyDgsj4hHW2gFOT6zd0ONt14Oy0LzqKRD1M"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +25,12 @@
         "backgroundColor": "#40189D"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.anonymous.Jobsy"
+      "package": "com.anonymous.Jobsy",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyDgsj4hHW2gFOT6zd0ONt14Oy0LzqKRD1M"
+        }
+      }
     },
     "web": {
       "bundler": "metro",
