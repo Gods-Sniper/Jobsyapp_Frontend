@@ -15,8 +15,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import DropDownPicker from "react-native-dropdown-picker";
 import { API_BASE_URL } from "../config";
 import * as Location from "expo-location";
-import * as Notifications from "expo-notifications";
-import { registerForPushNotificationsAsync } from "../notifications/registerPushToken";
 
 type Job = {
   id: string;
@@ -162,20 +160,20 @@ export const Home = () => {
     setRefreshing(false);
   };
 
-  useEffect(() => {
-    registerForPushNotificationsAsync();
+  // useEffect(() => {
+  //   registerForPushNotificationsAsync();
 
-    const subscription = Notifications.addNotificationReceivedListener(
-      (notification) => {
-        // Show a pop-up or update your UI
-        return Alert.alert(
-          notification.request.content.title ?? "",
-          notification.request.content.body ?? ""
-        );
-      }
-    );
-    return () => subscription.remove();
-  }, []);
+  //   const subscription = Notifications.addNotificationReceivedListener(
+  //     (notification) => {
+  //       // Show a pop-up or update your UI
+  //       return Alert.alert(
+  //         notification.request.content.title ?? "",
+  //         notification.request.content.body ?? ""
+  //       );
+  //     }
+  //   );
+  //   return () => subscription.remove();
+  // }, []);
 
   return (
     <View style={styles.container}>

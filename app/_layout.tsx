@@ -10,6 +10,7 @@ import "react-native-reanimated";
 import ToastManager from "toastify-react-native";
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { NotificationProvider } from "@/context/NotificationContext";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -23,14 +24,16 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-      <ToastManager />
-      <Stack>
-        <Stack.Screen name="onboarding" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: true }} />
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />=
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <NotificationProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <ToastManager />
+        <Stack>
+          <Stack.Screen name="onboarding" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: true }} />
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />=
+        </Stack>
+        <StatusBar style="auto" />
+      </ThemeProvider>
+    </NotificationProvider>
   );
 }
